@@ -34,12 +34,13 @@ $19.31), Qwen3.8 Flash ≈ $0.0033 (832 req, $2.78), GLM-5.3 Flash ≈ $0.0056, 
 cheaper: ~150 requests ≈ $0.45–0.50 per task (5 tasks after the A/B: 731 req, $2.52). DeepSeek per task is roughly
 $1–1.4 at most (its month total also covers work before the scorecard), because it runs longer loops (it also fixes more). Qwen implementation trial (11-06): protocol fixed by the `date` rule, code real and tested, but it over-engineered a fix
 that doesn't reach PF. 2nd trial (SVC usetp, 11-06): merged — refuted its own prior diagnosis, fix by the TechRef, ~50 min, clean log.
-Use Qwen for diagnosis and small, well-specified implementations (now 4 useful / 5 trials — the 5th a well-argued no-fix finding; the DdA meter fix was a real open-ended diagnosis too); DeepSeek for open-ended fixes.
+Use Qwen for diagnosis and small, well-specified implementations (now 5 useful / 6 trials — the 5th a well-argued no-fix finding; the DdA meter fix was a real open-ended diagnosis too); DeepSeek for open-ended fixes.
 
 ## 2. Scorecard (evidence, newest first)
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-06 | Qwen3.8 Flash xhigh | LA CABAÑA/CUEL Current Controller xd/xq (null direction; my brief: check frame consumers of Pmr/Pmi) | DONE: confirmed the hypothesis — Pmr/Pmi feed the ElmGenstat `u1r_in/u1i_in` slot (22 plants wire it; it was being dropped as 'unsupported'); PF's init rule e = u + z·i with default uk 10 %/Pcu 10 kW reproduces Pmr/Pmi to 2e-16 (CUEL 1e-5); xd/xq 4.6→<1e-4; flexible-exigency rule so WECC sources keep their own logic; refuted the earlier 'stored u0' child; 10 ms p90 7.84→7.81e-5. Merge conflict with the parallel xspeed child (same class) resolved by me; I made bad uk/Pcu non-fatal | ~1.5 h | Clean |
 | 11-06 | DeepSeek V4.1 Flash max | ElmGenstat `xspeed` constant 1.0 → measured terminal frequency (25F-relevant) | DONE: found the rule in TechRef (output "Frequency" of all 4 RMS models), rejected PLL/system-frame readings with data (constant-Z/P models publish xspeed and have no PLL; 47/111 Genstat lack a PLL); reused PF's StaVmea `fe` filter (Tfe=3/Fnom) as 2 states, pure residual; synthetic ramp test; 10 ms identical (no event), t0 0 worse; merged d32aa5f. Honest gap: PF snapshots don't record fpv over time, so the filter is unverified until an event case | ~45 min | Clean |
 | 11-06 | DeepSeek V4.1 Flash max | Load flow: Q limits from IntQlim capability curves (P and U dependent, inputmod 0/1, ngnum) + outer loop for unknown U + extractor for future DBs | DONE: verified the pu/ngnum scaling against PF's t0 itself; 2608 unchanged as predicted (94/94 inside, ΔQ 0, slack equal); 15 synthetic tests; t0 0 worse; merged 7135948 | ~1 h | Clean; curves load only via `VIQSILENT_QLIM` for 2608 (stored project lacks them) |
 | 11-06 | DeepSeek V4.1 Flash high (Windows) | Mechanical PF-bridge run: IntQlim extraction script (mine, SHA-checked) | DONE on retry: 1st run correctly STOPPED at step 1 (client project active, bridge down) without touching anything; after the user switched to 2608, 94 curves, 0 errors, 6.5 s, zip verified | minutes | Clean; exact runbook followed |
@@ -105,6 +106,9 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+- 11-06 Parallel children that touch the same class (xspeed + CABAÑA both in `GenstatPF`) merge with conflicts and
+  break each other's tests (new states → a test passing `x=[]`). Merge the second one by hand, run the full suite,
+  and re-run 10 ms on the combined tree. When briefing parallel children, name the shared files.
 - 11-06 Before sending a child to extract "stored" values through the PF bridge, look for a physical pattern in PF's
   numbers: LA CABAÑA's "u0 from case history" (prior child) had Pmr+jPmi at the terminal-voltage angle (1.5279 vs
   1.5280 rad), which points to a frame connection rather than history → a Mac-only diagnosis replaced a Windows run.
