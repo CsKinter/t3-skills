@@ -34,12 +34,13 @@ $19.31), Qwen3.8 Flash ≈ $0.0033 (832 req, $2.78), GLM-5.3 Flash ≈ $0.0056, 
 cheaper: ~150 requests ≈ $0.45–0.50 per task (5 tasks after the A/B: 731 req, $2.52). DeepSeek per task is roughly
 $1–1.4 at most (its month total also covers work before the scorecard), because it runs longer loops (it also fixes more). Qwen implementation trial (11-06): protocol fixed by the `date` rule, code real and tested, but it over-engineered a fix
 that doesn't reach PF. 2nd trial (SVC usetp, 11-06): merged — refuted its own prior diagnosis, fix by the TechRef, ~50 min, clean log.
-Use Qwen for diagnosis and small, well-specified implementations (now 6 useful / 7 trials — the 5th a well-argued no-fix finding; the DdA meter fix was a real open-ended diagnosis too); DeepSeek for open-ended fixes.
+Use Qwen for diagnosis and small, well-specified implementations (now 7 useful / 8 trials — the 5th a well-argued no-fix finding; the DdA meter fix was a real open-ended diagnosis too); DeepSeek for open-ended fixes.
 
 ## 2. Scorecard (evidence, newest first)
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-06 | Qwen3.8 Flash xhigh | EL MAITEN WTGPT_A pitch ramps (Theta 0→0.06 at 0.1 s; PF exactly 0) | PARTIAL, strong: rejected the brief's anti-windup hypotheses with numbers; root cause = over-determined init (inc(wref)=wt rows kept against a published input + stale `ctx.señales`), PF lands on the torque curve lapprox(Pe)=0.9895238 exactly; general rule (cbda3d1) makes t0 exact but breaks step 1 via 2 other engine bugs (WD3 discrete SCC, dpmax candidate swap) → reverted itself, kept a narrow safe rule + 3 tests; t0 0 worse/3 better, 10 ms identical, ramp remains; merged e589e2b | ~2 h | Clean; good self-revert discipline; clear handoff list |
 | 11-06 | DeepSeek V4.1 Flash max | SAN ISIDRO vco `xtv2` opposite sign to PF at 0.1 s (~90 % of long-run error) | DONE as a finding, no engine change: mandatory fidelity test passed (isolated vco with PF inputs: −2.99/+2.29 vs PF −2.74/+2.47), producers UEL exact and PSS2B 1.2 %; first divergence `ut` at t0+ (−2.3e-5, same UTERM family as paso_v56); sensitivity table (ut ±2.3e-5 → ∓0.25); **re-measured the premise on the current base and showed the −3.47 doesn't reproduce in f8dec91** (estimate +1.5); found a NEW stop at 0.058 s (`error_id` of PV controllers, 0.40, h-independent). Acceptance 6/6 = paso_v58, 434 passed | ~45 min of 2.5 | Clean; real timestamps |
 | 11-06 | DeepSeek V4.1 Flash max | Profile + speed up the RMS step (~55 s per 2 ms) without changing numbers | DONE: profiled first — 69 % of the step was `Jf[:nx,:] = I − h/2·Jf` on a LIL matrix, not the FD Jacobian everyone assumed; COO assembly, fixed per-device template, cached network block; caught a 7e-8 trajectory drift from SuperLU pattern (explicit zeros) and fixed it to bit-identical; found the saved pickles were silently truncated and regenerated them. Step 7.1–7.4×, init 197→149 s; my check: max|dif| 0.0 over 25,292×6; 10 tests; merged f8dec91 | ~1 h of 2.5 | Clean; declined coloring/AD because they'd change numbers (as briefed) |
 | 11-06 | DeepSeek V4.1 Flash high | Measurement-only long run to 1 s vs PF snapshots 0.01/0.1/0.5/1.0 (no engine change) | PARTIAL, high value: reached 0.1 s (p90 2.5e-4, non-inherited max 2.34), engine cannot pass 0.102 s (TAIRA Clock boolean loop in Newton) and fails at 0.012 s in a single call; ran a clean A/B (no comparisons → identical) to rule out its own instrumentation; caught its own t0-freeze script bug; 9 prioritized drift candidates with PF's 0.5/1 s projections (SAN ISIDRO xtv2 opposite sign, EL MAITEN pitch ramp PF=0, PSS2B not decaying, CHAPIQUIÑA AVR 12× sensitive) | ~3 h of 4.5 | Clean; real timestamps; honest PARTIAL |
@@ -112,6 +113,9 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+- 11-06 Children's reports can contradict each other through different run setups: SAN ISIDRO said "engine stops at
+  0.058 s" (0.002 s per `simular` call), EL MAITEN reached 0.1 s with [0.01, 0.1] on the same code. Before relaying a
+  new failure, check which call pattern produced it.
 - 11-06 A drift premise measured on an older commit may not survive later merges: SAN ISIDRO's "−3.47 at 0.1 s"
   (measured on 7135948) became ≈ +1.5 on f8dec91. Briefs that chase a long-run drift should ask the child to
   re-measure the premise on its base first (cheap) and stop as a finding if it's gone.
