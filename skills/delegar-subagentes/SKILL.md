@@ -112,10 +112,10 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
-- 11-06 Performance briefs: demand a profile before any change and a bit-identity acceptance (trajectory max|dif|),
 - 11-06 A drift premise measured on an older commit may not survive later merges: SAN ISIDRO's "−3.47 at 0.1 s"
   (measured on 7135948) became ≈ +1.5 on f8dec91. Briefs that chase a long-run drift should ask the child to
   re-measure the premise on its base first (cheap) and stop as a finding if it's gone.
+- 11-06 Performance briefs: demand a profile before any change and a bit-identity acceptance (trajectory max|dif|),
   and forbid trajectory-changing tricks. The hotspot was not where I guessed (LIL slicing, not FD). Also: when a brief
   hands children a saved artifact (pickle), load it once yourself first — mine was silently truncated.
 - 11-06 Measure long before polishing short: 30+ merges tuned 10 ms while the engine could not integrate 0.1 s in one
