@@ -122,6 +122,8 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 
 ## 6. Lessons (dated; add new ones on top)
 
+- 2026-11-06: Two children that are each bit-identical can still break parity when merged. The C backend returned views of a reused buffer, and the other child's Jacobian code re-read the first evaluation after later ones had overwritten it. Always rerun the bit-identity gate on the merge itself, never infer it from the parents. When a fast path returns buffers it owns, say so in the brief ("returned arrays are only valid until the next call").
+
 - 2026-11-06: For speed work, gate the new path behind an env flag and demand bit-identical parity at three levels (per-instance evals, assembled F/J, the 10 ms PF comparison). The child then reports the honest split (what went native, what fell back and why) and the merge is risk-free; the speedup you get is bounded by what stays in Python, so ask for that breakdown in the brief.
 - 11-06 A diagnosis that ends 'the rest must be X' (elimination) is a hypothesis, not a finding. Before acting, list the largest terms in its own residual: in paso_v67 one CER carried +11.4 Mvar of the 'unexplained' jump. Briefs for diagnosis should demand a positive test of the claimed cause.
 - 11-06: when a child blames the reference or harness ("PF snapshots are mis-timed"), test it system-wide before acting: shift our trajectory across candidate times and check whether *all* variables improve. One variable family agreeing is a local quirk, not a clock offset (paso_v71).
