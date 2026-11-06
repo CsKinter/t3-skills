@@ -40,6 +40,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 7 useful /
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-06 | DeepSeek V4.1 Flash max | Make the init coherent (follow-up of EL MAITEN): re-apply the general inc() rule without breaking step 1 | DONE: (1) swap guard — keep inc() when the replacement feeds back via delay() (ALENA dpmax 1.3e10 was what broke Newton; the WD3 'discrete SCC' suspicion vanished once it was gone); (2) signal freshness with `ctx.leidos` ('signal changed since the consumer read it'), after its first version ('u0 differs') over-fired 54 refreshes and moved HP LAJA — it caught that itself; (3) cherry-picked cbda3d1. EL MAITEN Theta/x2 = PF to 1e-16 at 0.1 s; t0 0 worse/14 better; 10 ms p90 7.62e-5; 4 commits, 3 test files; merged ab23182 | ~2 h | Clean; Qwen diagnosis → DeepSeek implementation worked again |
 | 11-06 | DeepSeek V4.1 Flash max | Long-run robustness: single `simular` call fails at 0.012 s; TAIRA Clock boolean loop fails h=0 re-solve at 0.102 s | DONE: two causes — (1) LU reused across steps with a stale side plan/linearization point (call boundaries only 'fixed' it by resetting the LU) → fresh LU every h>0 step; (2) aflipflop/lastvalue Clock switching inside a step → commit discrete memory and re-solve h=0, only as a rescue when a step fails (10 ms trajectory untouched). Single call to 0.12 s OK; 10 ms = paso_v58; 3 synthetic tests. My merge review caught a flag bug (`memoria_cambiada` overwritten by the last memory instead of OR-accumulated). Merged 94fc3bb, no textual conflict with the speed work | ~3 h | Clean; slow (58 s/step mean on the pre-speed base) |
 | 11-06 | Qwen3.8 Flash xhigh | EL MAITEN WTGPT_A pitch ramps (Theta 0→0.06 at 0.1 s; PF exactly 0) | PARTIAL, strong: rejected the brief's anti-windup hypotheses with numbers; root cause = over-determined init (inc(wref)=wt rows kept against a published input + stale `ctx.señales`), PF lands on the torque curve lapprox(Pe)=0.9895238 exactly; general rule (cbda3d1) makes t0 exact but breaks step 1 via 2 other engine bugs (WD3 discrete SCC, dpmax candidate swap) → reverted itself, kept a narrow safe rule + 3 tests; t0 0 worse/3 better, 10 ms identical, ramp remains; merged e589e2b | ~2 h | Clean; good self-revert discipline; clear handoff list |
 | 11-06 | DeepSeek V4.1 Flash max | SAN ISIDRO vco `xtv2` opposite sign to PF at 0.1 s (~90 % of long-run error) | DONE as a finding, no engine change: mandatory fidelity test passed (isolated vco with PF inputs: −2.99/+2.29 vs PF −2.74/+2.47), producers UEL exact and PSS2B 1.2 %; first divergence `ut` at t0+ (−2.3e-5, same UTERM family as paso_v56); sensitivity table (ut ±2.3e-5 → ∓0.25); **re-measured the premise on the current base and showed the −3.47 doesn't reproduce in f8dec91** (estimate +1.5); found a NEW stop at 0.058 s (`error_id` of PV controllers, 0.40, h-independent). Acceptance 6/6 = paso_v58, 434 passed | ~45 min of 2.5 | Clean; real timestamps |
@@ -77,7 +78,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 7 useful /
 Reading so far: DeepSeek V4.1 Flash max is the most reliable for closing a task. In the A/B, both Haiku and Qwen stopped at
 a diagnosis with most of the budget left; Qwen's was deeper and more actionable, Haiku's cleaner and cheaper. Neither
 implemented. Useful pattern: cheap diagnosis by Haiku/Qwen → implementation by DeepSeek with both diagnoses as traspaso
-(first run "PPC ANDES III: anclaje PF", 11-06: worked — DONE, though the root cause was a third thing neither diagnosis named). DeepSeek closed 18/18 engine tasks on 11-05/06 (one PARTIAL only by an over-tight threshold). GLM Flash is a fallback. Don't trust children's self-reported clock
+(first run "PPC ANDES III: anclaje PF", 11-06: worked — DONE, though the root cause was a third thing neither diagnosis named). DeepSeek closed 19/19 engine tasks on 11-05/06 (one PARTIAL only by an over-tight threshold). GLM Flash is a fallback. Don't trust children's self-reported clock
 times; use the thread's createdAt/completedAt.
 
 ## 3. Brief
@@ -114,6 +115,9 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+- 11-06 When I fix something during `git merge --no-commit`, `git add` it before committing: my 94fc3bb merge
+  message described a fix that stayed unstaged (found only at the next merge). Check `git status` is clean after
+  every merge commit.
 - 11-06 Children's reports can contradict each other through different run setups: SAN ISIDRO said "engine stops at
   0.058 s" (0.002 s per `simular` call), EL MAITEN reached 0.1 s with [0.01, 0.1] on the same code. Before relaying a
   new failure, check which call pattern produced it.
