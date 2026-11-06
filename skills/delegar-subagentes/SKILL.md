@@ -34,12 +34,13 @@ $19.31), Qwen3.8 Flash ≈ $0.0033 (832 req, $2.78), GLM-5.3 Flash ≈ $0.0056, 
 cheaper: ~150 requests ≈ $0.45–0.50 per task (5 tasks after the A/B: 731 req, $2.52). DeepSeek per task is roughly
 $1–1.4 at most (its month total also covers work before the scorecard), because it runs longer loops (it also fixes more). Qwen implementation trial (11-06): protocol fixed by the `date` rule, code real and tested, but it over-engineered a fix
 that doesn't reach PF. 2nd trial (SVC usetp, 11-06): merged — refuted its own prior diagnosis, fix by the TechRef, ~50 min, clean log.
-Use Qwen for diagnosis and small, well-specified implementations (now 5 useful / 6 trials — the 5th a well-argued no-fix finding; the DdA meter fix was a real open-ended diagnosis too); DeepSeek for open-ended fixes.
+Use Qwen for diagnosis and small, well-specified implementations (now 6 useful / 7 trials — the 5th a well-argued no-fix finding; the DdA meter fix was a real open-ended diagnosis too); DeepSeek for open-ended fixes.
 
 ## 2. Scorecard (evidence, newest first)
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-06 | Qwen3.8 Flash xhigh | GUACOLDA U3 drp ur/ui 0.877 vs PF 0.956 (ratio = 13.3/14.5 kV) | DONE: found the producer is the StaVmea (i_mode=1) scaled to the RMS bus's max uknom instead of the connected terminal's; same rule as the flow fix be7e629; showed the machine itself was already right and vco/pss were just propagation; also fixed `int(0 or 1)` collapsing i_mode=0 (inert in 2608: 0 meters use it, matters for 25F); 8 inherited vars resolved, t0 0 worse, 10 ms p90 7.81→7.75e-5; merged bae4567 cleanly on top of LA CRUZ (both in sen.py) | ~1 h | Clean; checked other ugn≠kv machines (VOLCAN, PILMAIQUEN) on its own |
 | 11-06 | DeepSeek V4.1 Flash max | REPC_A LA CRUZ SOLAR Pbranch/Qbranch (0.096/0.036 vs PF 0.110/0.002) | DONE: PF meters the J3-1 coupler at 220 kV; the KCL section sum omitted the load C. SQM La Cruz 23 (warned 'not attributable' and skipped) → added section loads with the same exponential model as `Carga` (shared helper); now 0.110122/0.002044 vs PF 0.110122/0.002043; only cubicle meter in the SEN with loads, so nothing else moved; 3 tests; t0 0 worse; 10 ms p90 7.81→7.75e-5; merged a2e044a | ~1 h | Clean; read the old warnings in the code as clues |
 | 11-06 | Qwen3.8 Flash xhigh | LA CABAÑA/CUEL Current Controller xd/xq (null direction; my brief: check frame consumers of Pmr/Pmi) | DONE: confirmed the hypothesis — Pmr/Pmi feed the ElmGenstat `u1r_in/u1i_in` slot (22 plants wire it; it was being dropped as 'unsupported'); PF's init rule e = u + z·i with default uk 10 %/Pcu 10 kW reproduces Pmr/Pmi to 2e-16 (CUEL 1e-5); xd/xq 4.6→<1e-4; flexible-exigency rule so WECC sources keep their own logic; refuted the earlier 'stored u0' child; 10 ms p90 7.84→7.81e-5. Merge conflict with the parallel xspeed child (same class) resolved by me; I made bad uk/Pcu non-fatal | ~1.5 h | Clean |
 | 11-06 | DeepSeek V4.1 Flash max | ElmGenstat `xspeed` constant 1.0 → measured terminal frequency (25F-relevant) | DONE: found the rule in TechRef (output "Frequency" of all 4 RMS models), rejected PLL/system-frame readings with data (constant-Z/P models publish xspeed and have no PLL; 47/111 Genstat lack a PLL); reused PF's StaVmea `fe` filter (Tfe=3/Fnom) as 2 states, pure residual; synthetic ramp test; 10 ms identical (no event), t0 0 worse; merged d32aa5f. Honest gap: PF snapshots don't record fpv over time, so the filter is unverified until an event case | ~45 min | Clean |
@@ -107,6 +108,8 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+- 11-06 A t0 ratio that equals two nominal voltages (0.9172 = 13.3/14.5) is a base bug; put the ratio in the brief and
+  Qwen closes it in ~1 h. Check any `int(x or default)` the child touches: it silently maps an explicit 0 to the default.
 - 11-06 Existing `av.append("... no atribuible ...")`/"se omite" warnings in the engine are a map of known gaps: LA CRUZ
   REPC_A was exactly one of them (a load skipped in a meter's KCL section). When briefing a meter/assembly mismatch, tell
   the child to grep the run's warnings for the element first.
