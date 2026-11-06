@@ -40,6 +40,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 4 useful /
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-06 | DeepSeek V4.1 Flash max | ElmGenstat `xspeed` constant 1.0 → measured terminal frequency (25F-relevant) | DONE: found the rule in TechRef (output "Frequency" of all 4 RMS models), rejected PLL/system-frame readings with data (constant-Z/P models publish xspeed and have no PLL; 47/111 Genstat lack a PLL); reused PF's StaVmea `fe` filter (Tfe=3/Fnom) as 2 states, pure residual; synthetic ramp test; 10 ms identical (no event), t0 0 worse; merged d32aa5f. Honest gap: PF snapshots don't record fpv over time, so the filter is unverified until an event case | ~45 min | Clean |
 | 11-06 | DeepSeek V4.1 Flash max | Load flow: Q limits from IntQlim capability curves (P and U dependent, inputmod 0/1, ngnum) + outer loop for unknown U + extractor for future DBs | DONE: verified the pu/ngnum scaling against PF's t0 itself; 2608 unchanged as predicted (94/94 inside, ΔQ 0, slack equal); 15 synthetic tests; t0 0 worse; merged 7135948 | ~1 h | Clean; curves load only via `VIQSILENT_QLIM` for 2608 (stored project lacks them) |
 | 11-06 | DeepSeek V4.1 Flash high (Windows) | Mechanical PF-bridge run: IntQlim extraction script (mine, SHA-checked) | DONE on retry: 1st run correctly STOPPED at step 1 (client project active, bridge down) without touching anything; after the user switched to 2608, 94 curves, 0 errors, 6.5 s, zip verified | minutes | Clean; exact runbook followed |
 | 11-06 | Qwen3.8 Flash xhigh | SAN JUAN park controller `prefcurt2` 0.3358 vs PF 0.3392 (+ 1.268 kick at 10 ms) | DONE as a finding, no engine change: translation correct (selfix gives both fields the common setpoint); PF's t0 is out of equilibrium (`perr` = −0.012 MW from Pref/p mismatch, ×Kp_p 1.5 = exactly the t0 diff); the PF-rule anchor would worsen 0.0034→0.0186, so it rightly declined. 4 tests pinning the semantics merged (0b4143f); t0 0 worse, 10 ms identical | ~1.5 h | Clean; correctly refused a fix that matches PF's rule but not PF's numbers |
@@ -67,7 +68,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 4 useful /
 Reading so far: DeepSeek V4.1 Flash max is the most reliable for closing a task. In the A/B, both Haiku and Qwen stopped at
 a diagnosis with most of the budget left; Qwen's was deeper and more actionable, Haiku's cleaner and cheaper. Neither
 implemented. Useful pattern: cheap diagnosis by Haiku/Qwen → implementation by DeepSeek with both diagnoses as traspaso
-(first run "PPC ANDES III: anclaje PF", 11-06: worked — DONE, though the root cause was a third thing neither diagnosis named). DeepSeek closed 12/12 engine tasks on 11-05/06 (one PARTIAL only by an over-tight threshold). GLM Flash is a fallback. Don't trust children's self-reported clock
+(first run "PPC ANDES III: anclaje PF", 11-06: worked — DONE, though the root cause was a third thing neither diagnosis named). DeepSeek closed 13/13 engine tasks on 11-05/06 (one PARTIAL only by an over-tight threshold). GLM Flash is a fallback. Don't trust children's self-reported clock
 times; use the thread's createdAt/completedAt.
 
 ## 3. Brief
@@ -104,6 +105,11 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+- 11-06 Before sending a child to extract "stored" values through the PF bridge, look for a physical pattern in PF's
+  numbers: LA CABAÑA's "u0 from case history" (prior child) had Pmr+jPmi at the terminal-voltage angle (1.5279 vs
+  1.5280 rad), which points to a frame connection rather than history → a Mac-only diagnosis replaced a Windows run.
+- 11-06 Three children in parallel (2 DeepSeek + 1 Qwen) on separate worktrees from the same base ran fine; a
+  measurement-only child (no engine changes) is a good use of DeepSeek high for multi-hour runs.
 - 11-06 PF's own t0 can be out of equilibrium (SAN JUAN: `perr` ≠ 0 from a Pref/p mismatch inside PF). A fix that
   follows PF's rule but moves the numbers away from PF's should be declined; a numbered no-fix finding plus tests
   that pin the semantics is a valid DONE. Say so in briefs so children don't force a fix.
