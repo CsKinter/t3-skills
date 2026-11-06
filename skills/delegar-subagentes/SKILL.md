@@ -40,6 +40,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 6 useful /
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-06 | DeepSeek V4.1 Flash max | PSS2B/AVR group drifts in 10 ms (CTA x8 −0.054 vs −0.032, CTM3TG, RCOL-U2 AVR, Pehuenche UEL) | DONE as a finding, no engine change: UTERM is the first input to move (flow 1.002697 → PF 1.003140 / VS 1.003046 at t0+); Td=0.02 s + 8 LeadLags amplify it; decomposed ANDINA by input (U −1.57e-5, Q +7.8e-6, P +1.9e-6); proved fidelity by feeding PF's t0 inputs into our model (reproduces PF's −1.712e-5); PANGUE (no UTERM) as control 3 % vs 67–77 %. Points the gap at flow→dynamic t0 voltage. 1 pinning test; merged a790f07 | ~1.5 h | Clean; used the control case I suggested in the brief |
 | 11-06 | Qwen3.8 Flash xhigh | GUACOLDA U3 drp ur/ui 0.877 vs PF 0.956 (ratio = 13.3/14.5 kV) | DONE: found the producer is the StaVmea (i_mode=1) scaled to the RMS bus's max uknom instead of the connected terminal's; same rule as the flow fix be7e629; showed the machine itself was already right and vco/pss were just propagation; also fixed `int(0 or 1)` collapsing i_mode=0 (inert in 2608: 0 meters use it, matters for 25F); 8 inherited vars resolved, t0 0 worse, 10 ms p90 7.81→7.75e-5; merged bae4567 cleanly on top of LA CRUZ (both in sen.py) | ~1 h | Clean; checked other ugn≠kv machines (VOLCAN, PILMAIQUEN) on its own |
 | 11-06 | DeepSeek V4.1 Flash max | REPC_A LA CRUZ SOLAR Pbranch/Qbranch (0.096/0.036 vs PF 0.110/0.002) | DONE: PF meters the J3-1 coupler at 220 kV; the KCL section sum omitted the load C. SQM La Cruz 23 (warned 'not attributable' and skipped) → added section loads with the same exponential model as `Carga` (shared helper); now 0.110122/0.002044 vs PF 0.110122/0.002043; only cubicle meter in the SEN with loads, so nothing else moved; 3 tests; t0 0 worse; 10 ms p90 7.81→7.75e-5; merged a2e044a | ~1 h | Clean; read the old warnings in the code as clues |
 | 11-06 | Qwen3.8 Flash xhigh | LA CABAÑA/CUEL Current Controller xd/xq (null direction; my brief: check frame consumers of Pmr/Pmi) | DONE: confirmed the hypothesis — Pmr/Pmi feed the ElmGenstat `u1r_in/u1i_in` slot (22 plants wire it; it was being dropped as 'unsupported'); PF's init rule e = u + z·i with default uk 10 %/Pcu 10 kW reproduces Pmr/Pmi to 2e-16 (CUEL 1e-5); xd/xq 4.6→<1e-4; flexible-exigency rule so WECC sources keep their own logic; refuted the earlier 'stored u0' child; 10 ms p90 7.84→7.81e-5. Merge conflict with the parallel xspeed child (same class) resolved by me; I made bad uk/Pcu non-fatal | ~1.5 h | Clean |
@@ -71,7 +72,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 6 useful /
 Reading so far: DeepSeek V4.1 Flash max is the most reliable for closing a task. In the A/B, both Haiku and Qwen stopped at
 a diagnosis with most of the budget left; Qwen's was deeper and more actionable, Haiku's cleaner and cheaper. Neither
 implemented. Useful pattern: cheap diagnosis by Haiku/Qwen → implementation by DeepSeek with both diagnoses as traspaso
-(first run "PPC ANDES III: anclaje PF", 11-06: worked — DONE, though the root cause was a third thing neither diagnosis named). DeepSeek closed 14/14 engine tasks on 11-05/06 (one PARTIAL only by an over-tight threshold). GLM Flash is a fallback. Don't trust children's self-reported clock
+(first run "PPC ANDES III: anclaje PF", 11-06: worked — DONE, though the root cause was a third thing neither diagnosis named). DeepSeek closed 15/15 engine tasks on 11-05/06 (one PARTIAL only by an over-tight threshold). GLM Flash is a fallback. Don't trust children's self-reported clock
 times; use the thread's createdAt/completedAt.
 
 ## 3. Brief
@@ -108,6 +109,9 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+- 11-06 For 'model X drifts from PF' briefs, require the fidelity test: feed PF's own t0+ inputs into our model and
+  compare. If it reproduces PF, the model is right and the gap is upstream (here: flow→dynamic terminal voltage), and
+  the child can decline the fix with proof instead of tuning the model. Also give it a contrast case (PANGUE).
 - 11-06 A t0 ratio that equals two nominal voltages (0.9172 = 13.3/14.5) is a base bug; put the ratio in the brief and
   Qwen closes it in ~1 h. Check any `int(x or default)` the child touches: it silently maps an explicit 0 to the default.
 - 11-06 Existing `av.append("... no atribuible ...")`/"se omite" warnings in the engine are a map of known gaps: LA CRUZ
