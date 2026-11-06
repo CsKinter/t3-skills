@@ -40,6 +40,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 5 useful /
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-06 | DeepSeek V4.1 Flash max | REPC_A LA CRUZ SOLAR Pbranch/Qbranch (0.096/0.036 vs PF 0.110/0.002) | DONE: PF meters the J3-1 coupler at 220 kV; the KCL section sum omitted the load C. SQM La Cruz 23 (warned 'not attributable' and skipped) → added section loads with the same exponential model as `Carga` (shared helper); now 0.110122/0.002044 vs PF 0.110122/0.002043; only cubicle meter in the SEN with loads, so nothing else moved; 3 tests; t0 0 worse; 10 ms p90 7.81→7.75e-5; merged a2e044a | ~1 h | Clean; read the old warnings in the code as clues |
 | 11-06 | Qwen3.8 Flash xhigh | LA CABAÑA/CUEL Current Controller xd/xq (null direction; my brief: check frame consumers of Pmr/Pmi) | DONE: confirmed the hypothesis — Pmr/Pmi feed the ElmGenstat `u1r_in/u1i_in` slot (22 plants wire it; it was being dropped as 'unsupported'); PF's init rule e = u + z·i with default uk 10 %/Pcu 10 kW reproduces Pmr/Pmi to 2e-16 (CUEL 1e-5); xd/xq 4.6→<1e-4; flexible-exigency rule so WECC sources keep their own logic; refuted the earlier 'stored u0' child; 10 ms p90 7.84→7.81e-5. Merge conflict with the parallel xspeed child (same class) resolved by me; I made bad uk/Pcu non-fatal | ~1.5 h | Clean |
 | 11-06 | DeepSeek V4.1 Flash max | ElmGenstat `xspeed` constant 1.0 → measured terminal frequency (25F-relevant) | DONE: found the rule in TechRef (output "Frequency" of all 4 RMS models), rejected PLL/system-frame readings with data (constant-Z/P models publish xspeed and have no PLL; 47/111 Genstat lack a PLL); reused PF's StaVmea `fe` filter (Tfe=3/Fnom) as 2 states, pure residual; synthetic ramp test; 10 ms identical (no event), t0 0 worse; merged d32aa5f. Honest gap: PF snapshots don't record fpv over time, so the filter is unverified until an event case | ~45 min | Clean |
 | 11-06 | DeepSeek V4.1 Flash max | Load flow: Q limits from IntQlim capability curves (P and U dependent, inputmod 0/1, ngnum) + outer loop for unknown U + extractor for future DBs | DONE: verified the pu/ngnum scaling against PF's t0 itself; 2608 unchanged as predicted (94/94 inside, ΔQ 0, slack equal); 15 synthetic tests; t0 0 worse; merged 7135948 | ~1 h | Clean; curves load only via `VIQSILENT_QLIM` for 2608 (stored project lacks them) |
@@ -69,7 +70,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 5 useful /
 Reading so far: DeepSeek V4.1 Flash max is the most reliable for closing a task. In the A/B, both Haiku and Qwen stopped at
 a diagnosis with most of the budget left; Qwen's was deeper and more actionable, Haiku's cleaner and cheaper. Neither
 implemented. Useful pattern: cheap diagnosis by Haiku/Qwen → implementation by DeepSeek with both diagnoses as traspaso
-(first run "PPC ANDES III: anclaje PF", 11-06: worked — DONE, though the root cause was a third thing neither diagnosis named). DeepSeek closed 13/13 engine tasks on 11-05/06 (one PARTIAL only by an over-tight threshold). GLM Flash is a fallback. Don't trust children's self-reported clock
+(first run "PPC ANDES III: anclaje PF", 11-06: worked — DONE, though the root cause was a third thing neither diagnosis named). DeepSeek closed 14/14 engine tasks on 11-05/06 (one PARTIAL only by an over-tight threshold). GLM Flash is a fallback. Don't trust children's self-reported clock
 times; use the thread's createdAt/completedAt.
 
 ## 3. Brief
@@ -106,6 +107,9 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+- 11-06 Existing `av.append("... no atribuible ...")`/"se omite" warnings in the engine are a map of known gaps: LA CRUZ
+  REPC_A was exactly one of them (a load skipped in a meter's KCL section). When briefing a meter/assembly mismatch, tell
+  the child to grep the run's warnings for the element first.
 - 11-06 Parallel children that touch the same class (xspeed + CABAÑA both in `GenstatPF`) merge with conflicts and
   break each other's tests (new states → a test passing `x=[]`). Merge the second one by hand, run the full suite,
   and re-run 10 ms on the combined tree. When briefing parallel children, name the shared files.
