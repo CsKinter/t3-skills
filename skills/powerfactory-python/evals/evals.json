@@ -1,0 +1,60 @@
+{
+  "skill_name": "powerfactory-python",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Necesito un ComPython para PowerFactory que recorra todos los transformadores de dos devanados de las redes activas y exporte a un CSV (para abrir en Excel) el nombre, la ruta, el tipo, la potencia nominal del tipo, las tensiones AT/BT del tipo y la posición actual del tap. Que tenga una ventanita para elegir dónde guardar el archivo.",
+      "expected_output": "Script de solo lectura: GetCalcRelevantObjects('*.ElmTr2'), identidad por GetFullName, lecturas protegidas, CSV ; + coma decimal + utf-8-sig, ventana tkinter con el parche de sys.argv y topmost, cancelar no hace nada.",
+      "files": [],
+      "assertions": [
+        "Obtiene los transformadores con GetCalcRelevantObjects('*.ElmTr2')",
+        "Exporta la ruta completa con GetFullName",
+        "CSV compatible con Excel en español: separador ';' y encoding utf-8-sig",
+        "Protege tkinter contra sys.argv ausente en el Python embebido",
+        "Cancelar la ventana termina sin exportar ni fallar",
+        "Lecturas de atributos protegidas (get_attr/try) para no detenerse a mitad"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Tengo un CSV con dos columnas: la ruta completa de la línea (como la da GetFullName) y el nombre de un TypLne que ya existe en la biblioteca. Quiero un script de PF que cambie el tipo de esas líneas pero solo dentro de una variation nueva 'Refuerzos 2030' con un expansion stage el 01-03-2030 a las 08:00, sin tocar el caso base. Que primero simule y me diga qué va a hacer.",
+      "expected_output": "Plan de solo lectura con dry run por defecto y reporte; variation+stage con hora 08:00; verificación del registro comparando el contenido del stage (no solo GetParent) antes de cambiar nada; cambio de ElmLne.typ_id en el stage; idempotencia; relectura; tipo destino resuelto sin ambigüedad.",
+      "files": [],
+      "assertions": [
+        "Simulación (dry run) por defecto, con reporte de lo que haría",
+        "El tAcTime del stage incluye la hora 08:00, no solo el día",
+        "Verifica que los cambios se registran en el stage nuevo antes de modificar líneas, comparando el contenido del stage",
+        "Solo cambia ElmLne.typ_id; no edita objetos de la biblioteca",
+        "Idempotente: una línea que ya tiene el tipo destino se reporta como ya aplicada",
+        "Relee typ_id después de escribir y marca error si no coincide",
+        "Resuelve el TypLne destino y reporta nombres ausentes o duplicados"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Quiero subir un 10% la corriente nominal (sline) de los conductores de 3 líneas específicas para un escenario futuro en PF, sin afectar el resto del sistema. Esas líneas usan tipos TypLne que comparten con otras líneas. ¿Cómo lo hago con un script?",
+      "expected_output": "Reconoce que sline vive en el tipo (biblioteca, no registrada por variations) y que el tipo es compartido; propone copiar el tipo con sufijo (y su ChaRef/característica si existe) y repuntar ElmLne.typ_id dentro de un stage verificado; no edita el tipo original; considera características térmicas asignadas a sline.",
+      "files": [],
+      "assertions": [
+        "Explica que sline vive en el tipo (biblioteca) y que las variations no registran cambios en la biblioteca",
+        "No modifica el TypLne original compartido",
+        "Copia el tipo con sufijo (AddCopy) y repunta ElmLne.typ_id dentro de una variation/stage",
+        "Considera una característica asignada a sline (sline.ChaRef) en el tipo copiado",
+        "Verifica que el stage está registrando antes de cambiar las líneas"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Voy a armar documentación de un ComInc para el equipo y me piden qué significa cada opción del parámetro iopt_lt0 del ComInc. ¿Qué puedes averiguar sin abrir PowerFactory y qué no?",
+      "expected_output": "Usa scripts/pf_attribute_metadata.py --class ComInc --attribute iopt_lt0 contra la DB de localización (solo lectura, sin abrir PF); explica que para iopt_lt0 la DB no trae filas (además no existe la tabla de códigos), que la numeración de valores se pide al usuario por hover o se busca en TechRef, y que los códigos de enum no se inventan; separa lo de la DB (etiqueta de otros parámetros como iopt_solvinc) de lo verificado por el usuario en la GUI y del manual; la DB no trae valores activos ni autoriza escrituras.",
+      "files": ["scripts/pf_attribute_metadata.py", "references/attribute-metadata.md"],
+      "assertions": [
+        "Consulta la DB con scripts/pf_attribute_metadata.py (sin abrir PF ni conexión COM)",
+        "Reporta que para ComInc.iopt_lt0 la DB no tiene filas: ausencia aquí no es 'no existe' (habla del hover + TechRef)",
+        "No inventa códigos de enum (0/1/2) ni los atribuye a la DB; los códigos que el usuario confirme se marcan como fuente GUI",
+        "Aclara que la DB de localización no da valores activos ni deduce permisos de escritura en PF",
+        "No genera otra skill ni duplica recursos; las exportaciones van a un archivo explícito fuera de la skill"
+      ]
+    }
+  ]
+}
