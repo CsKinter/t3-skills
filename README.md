@@ -31,3 +31,4 @@ cd ~/t3-skills && git pull
 ## Contents
 
 - `skills/mercadolibre-api/` — MercadoLibre search + AI ranking for deal bots (Telegram/WhatsApp).
+- `skills/delegar-subagentes/` — living protocol for delegating to subagents (routing scorecard, briefs, verification, lessons); built on the ViQSilent RMS work.
