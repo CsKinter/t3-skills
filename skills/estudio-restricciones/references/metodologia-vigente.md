@@ -1,4 +1,7 @@
-# Método y ciclo de restricción
+# Metodología vigente: método y ciclo de restricción
+
+La que se aplicó y se entregó en Cumbres del Ñuble. Lo que cambiaría con el DS 32 (prorrata por potencia disponible,
+híbridos como conjunto, costo de oportunidad) está aparte, en `metodologia-ds32.md`, y no se mezcla con esto.
 
 Qué se decide y en qué orden. La mecánica en PowerFactory (ficticios, prorrata, JSON por iteración, atributos) está en
 `powerfactory-python/references/estudio-restricciones.md` §2–3 y no se repite aquí.
@@ -70,9 +73,8 @@ corredor, no aplica.
 «BESS primero» es criterio del estudio y se justifica por su costo de oportunidad. No se presenta como regla del CEN
 (`bess-hibridos.md` §3).
 
-**Base de la prorrata** [C]: potencia máxima (o un porcentaje común de la nominal). Nunca el despacho ya restringido
-como si fuera la nominal. Con perfiles de recurso no coincidentes, repartir por Pmax o por potencia disponible da
-resultados distintos (`bess-hibridos.md` §3).
+**Base de la prorrata**: potencia máxima (o un porcentaje común de la nominal). Nunca el despacho ya restringido como
+si fuera la nominal. La prorrata por potencia disponible es de `metodologia-ds32.md`.
 
 ## 5. Cierre y recuperación
 

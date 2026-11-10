@@ -27,12 +27,26 @@ Al leer cualquier archivo de esta skill, distinguir:
 | 1. Proyecto y cartera | Qué es el proyecto (MW, BESS, inyección y retiro), qué vecinos se modelan | `references/bess-hibridos.md` | `proyectos-aa-seia` |
 | 2. Adecuación de base de datos | Obras, capacidades por condición, tensiones | `parametros-sen/references/capacidad-por-condicion.md` | `parametros-sen` |
 | 3. Escenarios e irrestricto | Bloques, estado de los BESS, receta de despacho, convergencia y reactivo | `references/escenarios-despacho.md` | `powerfactory-python` (`estudio-restricciones.md` §0–1) |
-| 4. Contingencias y ciclo | Lista y monitores, N limpio, peor par, factores, prorrata, cierre | `references/metodo-ciclo.md` | `powerfactory-python` (`estudio-restricciones.md` §2–3) |
+| 4. Contingencias y ciclo | Lista y monitores, N limpio, peor par, factores, prorrata, cierre | `references/metodologia-vigente.md` | `powerfactory-python` (`estudio-restricciones.md` §2–3) |
 | 5. Sensibilidades y coherencia | Qué preguntas vale la pena probar, contraste con estudios vecinos | `references/sensibilidades-coherencia.md` | — |
 | 6. Informe | Esqueleto, plantilla por escenario, origen de cifras, revisiones | `references/informe.md` | `informe-ee`, `redaccion` |
 | 7. Cierre | Validación final de escenarios, orden de la BD, oficialización | `powerfactory-python/references/cierre-bd.md` | `powerfactory-python`, `informe-ee` |
 
 Leer sólo la referencia de la fase en curso.
+
+## Metodología vigente y metodología DS 32
+
+Hay dos metodologías y no se mezclan:
+
+- **Vigente** (`references/metodologia-vigente.md`, con `escenarios-despacho.md` y `bess-hibridos.md`): la que se
+  aplicó y se entregó en Cumbres. Prorrata por potencia máxima, el modelo sigue la base del CEN, «BESS primero» como
+  criterio del estudio. **Es la que se usa salvo decisión expresa.**
+- **DS 32** (`references/metodologia-ds32.md`): prorrata por potencia disponible, híbridos como conjunto con tope
+  común, costo de oportunidad de los BESS. Quedó explorada y archivada, sin validar en PowerFactory. Se usa sólo si
+  Vicente decide adoptarla en un estudio, o como sensibilidad interna.
+
+Al empezar un estudio se pregunta cuál rige y queda como decisión en el tablero. Para un proyecto con COD posterior a
+la transición del decreto, o que sea él mismo un híbrido, la pregunta no es retórica.
 
 ## Arranque de un estudio nuevo
 

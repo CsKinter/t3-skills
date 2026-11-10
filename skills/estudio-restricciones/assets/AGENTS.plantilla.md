@@ -48,7 +48,7 @@ archivo y se corrige este.
 
 - Bloques y estado del BESS por escenario: <tabla corta>.
 - Receta del irrestricto: <recurso, BESS del fondo, térmicas, hidráulicas, balance>.
-- Modelado del proyecto: <una unidad con tope conjunto / PV y BESS separados>; <tope de inyección y retiro>.
+- Modelado del proyecto: <componentes y potencia de cada uno>; inyección <MW> y retiro <MW>.
 
 ## Contingencias y ciclo
 
@@ -56,7 +56,8 @@ archivo y se corrige este.
 - Capacidades: permanente en N; post-contingencia <criterio y para qué equipos>.
 - Ciclo: peor contingencia → factores sólo ahí → restringir → repetir, idéntico en todos los escenarios.
   Orden: <BESS, después ERNC; térmicas y pasada sin restringir; embalse si aplica>.
-  Participación: <umbral>. Objetivo de carga: <%>. Base de prorrata: <Pmax / disponible>.
+  Participación: <umbral>. Objetivo de carga: <%>.
+- Metodología: <vigente (prorrata por potencia máxima) / DS 32>, decisión <N°> del PLAN.
 - Se registra siempre el despacho disponible y el restringido.
 
 ## Decisiones cerradas (no reabrir sin que el usuario lo pida)

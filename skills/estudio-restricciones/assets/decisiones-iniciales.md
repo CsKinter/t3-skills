@@ -10,7 +10,7 @@ cerrar queda como hipótesis abierta, con la fase que bloquea.
 |---|---|---|---|
 | A1 | ¿Qué es exactamente el proyecto? MW por componente, inyección y retiro autorizados, BESS en MW y MWh | Eólico puro | Resolver con `proyectos-aa-seia` antes de modelar |
 | A2 | ¿Cuántos puntos de conexión y cuál es el horizonte (COD)? | Dos, 2034 | Con varios POI: ¿un informe o varios? |
-| A3 | Si hay almacenamiento propio: ¿una unidad con tope conjunto o componentes separados? | No aplicó | `references/bess-hibridos.md` §5 |
+| A3 | ¿Metodología vigente o DS 32? | Vigente; DS 32 explorada y archivada | Pesa si el COD es posterior a la transición o si el proyecto es un híbrido. Si se adopta: bloque G |
 | A4 | ¿Qué recibe el cliente? Restricción en el punto de conexión, por componente, o ambas | En el POI | |
 
 ## B. Base de datos y capacidades
@@ -46,8 +46,7 @@ cerrar queda como hipótesis abierta, con la fase que bloquea.
 | D4 | Objetivo de carga y banda | 99 % | Criterio de EE |
 | D5 | Orden de recorte | BESS, después ERNC. Térmicas y pasada fijas | Criterio de EE, no del CEN |
 | D6 | ¿Hay embalse aguas arriba del corredor limitante? | Sí en un POI: baja primero al mínimo del bloque | |
-| D7 | Base de la prorrata: potencia máxima o disponible | Máxima | Con solar y eólica en el mismo grupo, cambia el resultado |
-| D8 | ¿Los BESS cargando cuentan como restringibles? | Sí | |
+| D7 | ¿Los BESS cargando cuentan como restringibles? | Sí | |
 
 ## E. Sensibilidades e informe
 
@@ -57,6 +56,19 @@ cerrar queda como hipótesis abierta, con la fase que bloquea.
 | E2 | ¿Hay otros estudios de EE en la zona con los que deba ser coherente? | Sí, dos | La conciliación es interna |
 | E3 | ¿Quién revisa y qué formato espera? | Supervisor de EE | |
 | E4 | ¿Dónde vive el oficial y quién autoriza escribirlo? | OneDrive, con aprobación explícita | |
+
+## G. Sólo si se adopta la metodología DS 32
+
+No se recorren en un estudio con la metodología vigente. Detalle en `references/metodologia-ds32.md` §7.
+
+| # | Pregunta | Notas |
+|---|---|---|
+| G1 | ¿DS 32 como base del informe, o vigente como base y DS 32 como sensibilidad interna? | |
+| G2 | Base de la prorrata según el COD: potencia máxima (transitoria) o disponible (permanente) | Con solar y eólica en el mismo grupo cambia el resultado |
+| G3 | Modelado de híbridos: el proyecto y cada vecino como conjunto con tope común de inyección y retiro | Datos del informe de autorización de conexión |
+| G4 | Costo único o separado del conjunto propio | |
+| G5 | Orden de recorte: grupo único de costo cero, o BESS con costo de oportunidad | |
+| G6 | Verificar vigencia del decreto, norma técnica y guía del CEN antes de citar | |
 
 ## F. Trabajo con agentes
 

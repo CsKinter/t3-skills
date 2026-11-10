@@ -9,7 +9,7 @@ Cada sensibilidad responde **una pregunta** y se compara contra la base. Las que
 | ¿Cuánto depende el resultado de una obra futura? | Quitar el vínculo o refuerzo nuevo más cercano |
 | ¿Qué pasa si la cartera vecina crece o no llega? | Cartera de BESS y de ERNC, por madurez regulatoria |
 | ¿Cuánto pesa la capacidad asumida de un elemento? | Capacidad permanente frente a la de corta duración |
-| ¿Cuánto pesa el criterio de reparto? | Prorrata por potencia máxima frente a disponible |
+| ¿Cuánto cambiaría con el DS 32? | Metodología vigente frente a `metodologia-ds32.md` (interna) |
 | ¿Cuánto pesa el estado del BESS? | Carga, reposo, descarga |
 | ¿Hay una topología mejor? | Maniobras en la red local |
 | ¿Cuánto es atribuible al proyecto? | Con y sin proyecto sobre el mismo fondo |

@@ -149,7 +149,7 @@ cambiaba el N-1.
    unidades de costo marginal 0 (sin PMGD). Factores reutilizados si el par se repite. El umbral se calcula **por
    signo** (`fm = max(mx, −mn)`) y el máximo se toma entre las acciones que de verdad alivian, excluyendo PMGD antes:
    con un umbral sin signo, factores de −0,5 % dejaron en cero 815 MW de BESS. En un corredor con embalse aguas arriba
-   el embalse baja antes que los BESS (decisión del 02-11-2026; ver `estudio-restricciones/references/metodo-ciclo.md` §4).
+   el embalse baja antes que los BESS (decisión del 02-11-2026; ver `estudio-restricciones/references/metodologia-vigente.md` §4).
 5. **Prorrata técnica (guía CDC N°1-2024)**: repartir la colocación total X a prorrata de Pmax; la unidad cuya cuota
    supera su despacho base queda en la base y se reparte de nuevo. Búsqueda de X: `x1 = base − (l0 − OBJ + BANDA/2)/fg`
    (fg = mayor factor, %/MW) y luego secante hacia OBJ − BANDA/2; si el flujo falla, y = 1e9 y punto medio. OBJ = 99 %,
