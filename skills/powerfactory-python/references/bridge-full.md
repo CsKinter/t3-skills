@@ -77,3 +77,10 @@ puede afectar referencias o contexto: comprobarlo en la API real antes de encade
 Se prueba el transporte en un directorio temporal, con aplicación simulada: arranque sin mutación, ejecución y respuesta,
 recuperación por ID, error y STOP. Esto no valida clases, atributos, movimientos ni cálculo de la API real de PF.
 La validación real empieza con identidad/inventario en la copia abierta del estudio.
+
+Validación real adicional en PF 2025 (10-11-2026): identidad/inventario, `IntPrj.CreateVersion`, copia de semillas,
+movimientos de contenedores y `WriteChangesToDb`. PF rechazó con retorno 1 el movimiento de una carpeta que contenía
+el caso activo. Se crearon y activaron copias de preparación antes de archivar el origen; `destino.Move(origen)` es
+la dirección documentada de la API. Conservar el ComPython que ejecuta el puente mientras la sesión está abierta.
+Se compararon parámetros seleccionados entre origen y semilla al volver a activarlos, sin flujo. Los avisos de
+referencias inválidas/eliminadas al activar casos deben registrarse y revisarse; un comando exitoso no valida convergencia.
