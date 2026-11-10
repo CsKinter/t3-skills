@@ -193,7 +193,8 @@ en un momento cualquiera. Con eso dejaron de aparecer en el constructor del unil
 - **Costo fijo por comando** (23-10-2026): en la sesión del puente de las 11:34 cada comando tardó ~197 s aunque fallara al
   compilar (antes, < 1 s). Juntar lecturas grandes en un solo comando y medir con `bridge.log` (`"s"`). Causa no aislada.
 - `obj.GetAttributes()` existe pero falla («getting attributes … failed»): no sirve para listar atributos. Buscar el
-  nombre en la TechRef (`Help\TechRef`) o pedir el hover al usuario.
+  nombre con `app.GetAvailableAttributesAsJson` y unir la DB de localización; ver
+  [attribute-metadata.md](attribute-metadata.md). TechRef/hover sólo para ambigüedades restantes.
 - `GetCalcRelevantObjects()` sin patrón de clase tarda ~3 min (158 mil objetos en el SEN): filtrar siempre por clase.
 - **Escribir sólo lo que cambia**: si un `SetAttribute` deja el mismo valor, PF no crea delta y el puente rechaza la
   escritura («no quedó en la variation»), abortando el resto del objeto. Comparar antes y escribir sólo los atributos
