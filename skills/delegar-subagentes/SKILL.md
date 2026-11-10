@@ -40,6 +40,7 @@ Use Qwen for diagnosis and small, well-specified implementations (now 10 useful 
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-10 | DeepSeek V4.1 Flash high (Windows PC1) | K3: is the ~5 ppm VS−PF load-flow gap PF's tolerance? (errlf sweep on a ComLdf copy) | DONE: errlf 0.01→50 MVA gives the same 6 iterations and Δ|u| = 0 ppm, reproducible bit for bit; original ComLdf untouched (unsaved copy). Rules out tolerance; ComLdf has iopt_tem=0 (R at 20 °C, the 80 °C field inactive), so temperature is not the cause either. Gap is VS network modelling (220 kV suspect) | <1 h | Clean |
 | 11-10 | DeepSeek V4.1 Flash max (Windows i7) | P0: PF 2024 on a new PC — install bridge as ComPython, create Variation, read-only inventory of the 25F DB | DONE in 30 min: no COM on that PC → created the ComPython via GUI itself; bridge needed no changes for PF 2024; Variation VS_25F_20261110 active+recording without deactivating the 80 existing ones; full inventory (1 case, 31 event folders/2,345 events, 0 relays — protections are DSL); found GetAvailableAttributesAsJson missing in PF 2024 SP4; a misclick opened a delete dialog → answered No and verified nothing was deleted | 30 min | Clean; honest about the misclick |
 | 11-10 | DeepSeek V4.1 Flash max | O: does VS's network reproduce PF bus voltages given PF's exact injections (network vs devices)? | DONE as a finding, useful: no SEN run needed (rebuilt Y-bus from the constructor, reused L's trajectory); control 4e-10 ppm; PF-PV test leaves a ~5 ppm distributed network residual (220 kV +12.9) and found VS's LOAD FLOW already differs from PF's ComLdf by median +4.8 ppm — the same order as the 4–7 ppm bias. Suggested checking PF's errlf=1 MVA tolerance. 1 pytest failure = missing unversioned fixture | ~2 h | Clean; reused data instead of re-running |
 | 11-10 | DeepSeek V4.1 Flash high (Windows) | Bridge code copy PC1→Mac (mechanical) | DONE: 2 files, sha256, documented startup verbatim; noticed README missing and flagged CONFIRMO_ACCESO_TOTAL=True | 10 min | Clean |
@@ -156,6 +157,8 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+
+- 11-10: Before chasing a 'PF tolerance' explanation for a ppm gap, sweep errlf on a COPY of the ComLdf: a converged Newton is insensitive (0 ppm over 0.01–50 MVA), which closes the hypothesis in one cheap run. Read option flags (iopt_tem) before reading their values (temperature).
 
 - 2026-11-10: PF 2024 SP4 lacks `app.GetAvailableAttributesAsJson` (PF 2025 has it); extractor briefs for 2024 need a compat function and a coverage check against a known attribute list.
 - 2026-11-10: PF's ElmRes t=0 row is the ComInc initial point (after t=0 switching, e.g. a TSC stage), NOT the ComLdf load flow. Say so explicitly in briefs and give the ComLdf source when 'flow' values matter; two children (L, M) built conclusions on that confusion.
