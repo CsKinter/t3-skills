@@ -16,6 +16,7 @@ Qué hay en la skill:
 - `references/thermal-ratings-case.md` — caso completo (extractor → app → paquete → writeback). Léelo al extraer datos a otra app o aplicar cambios en lote.
 - `scripts/pf_variations.py` — variation + stage + verificación de registro, listos para pegar o importar.
 - `scripts/pf_bridge.py` + `scripts/pf_send.py` — puente a la sesión de PF abierta (solo lectura por defecto); ver `references/bridge.md`.
+- `scripts/pf_bridge_full.py` + `scripts/pf_full_send.py` — puente de acceso total para adecuación, poda y organización cuando el usuario autoriza ese modo. Leer `references/bridge-full.md`; no cambia el modo por defecto de otras tareas.
 - `scripts/fake_powerfactory.py` y `scripts/run_with_fake.py` — PowerFactory simulado para probar fuera de PF.
 
 ## Modelo mental: red vs biblioteca
@@ -129,6 +130,11 @@ el PF simulado, **decir que éste no valida la API real** (atributos, unidades, 
 ejecución en Simular sobre una copia del proyecto.
 
 ## Probar directo en PF (puente)
+
+Si el usuario pide el puente **full/acceso total** o autoriza una adecuación con ese puente, usar
+[`references/bridge-full.md`](references/bridge-full.md). Su autorización de modo y alcance persiste durante la tarea;
+no pedir de nuevo por cada escritura incluida. El puente full permite también organización y movimientos entre carpetas,
+que no deben tratarse como cambios aislados en una variation. Trabajar con respaldo, inventario y verificación del estado.
 
 Si el puente está corriendo (`python scripts/pf_send.py estado` → vivo), úsalo para verificar atributos, punteros y valores
 reales antes de entregar un script, en vez de pedirle al usuario que lo ejecute. Solo lectura por defecto. Los modos
