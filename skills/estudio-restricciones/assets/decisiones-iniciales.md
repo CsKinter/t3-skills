@@ -65,8 +65,8 @@ No se recorren en un estudio con la metodología vigente. Detalle en `references
 |---|---|---|
 | G1 | ¿DS 32 como base del informe, o vigente como base y DS 32 como sensibilidad interna? | |
 | G2 | Base de la prorrata según el COD: potencia máxima (transitoria) o disponible (permanente) | Con solar y eólica en el mismo grupo cambia el resultado |
-| G3 | Modelado de híbridos: el proyecto y cada vecino como conjunto con tope común de inyección y retiro | Datos del informe de autorización de conexión |
-| G4 | Costo único o separado del conjunto propio | |
+| G3 | Modelado de híbridos: tope de inyección y retiro del proyecto y de cada vecino | Viene de la autorización de conexión, no del decreto. Disponible del PV = máx(0, sol − carga) |
+| G4 | Costo único o separado del conjunto propio (art. 112 a o b) | Sin elección informada rige b |
 | G5 | Costo de los BESS: precio de la barra de carga (antes del SCED) o costo de oportunidad (con SCED) | El orden BESS → ERNC no cambia; los BESS nunca van a costo cero |
 | G6 | Verificar vigencia del decreto, norma técnica y guía del CEN antes de citar | |
 

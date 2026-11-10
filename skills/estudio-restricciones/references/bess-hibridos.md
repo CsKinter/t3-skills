@@ -4,8 +4,8 @@ Lo aprendido sobre almacenamiento en Cumbres, donde los BESS eran **de terceros*
 cuyo almacenamiento es propio, varias cosas pasan de «dato del fondo» a «objeto del estudio»: quedan como decisiones
 abiertas en §5.
 
-El tratamiento de un híbrido como conjunto con tope común, la prorrata por potencia disponible y el costo de
-oportunidad calculado por el SCED pertenecen a `metodologia-ds32.md`, que no es la vigente.
+La disponible del híbrido descontando la carga, la prorrata por potencia disponible y el costo de oportunidad
+pertenecen a `metodologia-ds32.md`, que no es la vigente.
 
 Marcas: **[V]** verificado, **[C]** criterio de estudio que se confirma con Vicente.
 
@@ -24,6 +24,8 @@ Marcas: **[V]** verificado, **[C]** criterio de estudio que se confirma con Vice
 - En el irrestricto el BESS va a su techo. Su recorte sale del ciclo.
 - **Dos signos de alivio**: un BESS alivia bajando su descarga cuando el factor es positivo y bajando su carga cuando
   es negativo. Limitar la carga es una restricción tan válida como limitar la descarga y se registra aparte.
+  Caso típico: la carga de los BESS más la demanda vuelven la zona un sumidero y sobrecargan en sentido inverso. Ahí
+  se restringe la carga, que es lo que sobrecarga; recortar el PV de un híbrido la empeoraría.
 - **Nivel común**: el porcentaje común de un grupo de BESS se expresa sobre la nominal (en Cumbres, 0,95·Sn) y no sobre
   el despacho base, con techo en el despacho irrestricto.
 - En PowerFactory, potencia y límites de Q del generador estático son **por unidad** (total = × número de unidades), y
