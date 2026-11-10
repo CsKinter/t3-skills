@@ -1,5 +1,6 @@
 """Lanza pf_bridge.py en modo MODIFICACIÓN (variation "Claude_revisar_<fecha>", copias "_revisar", diario y deshacer).
-Ejecutar este archivo desde un ComPython en PowerFactory. Ver la cabecera de pf_bridge.py."""
+Ejecutar este archivo desde un ComPython en PowerFactory; con autorización del usuario para modificación y el alcance
+acordado, el agente puede lanzarlo por la ruta GUI/PowerShell documentada. Ver la cabecera de pf_bridge.py."""
 import os
 
 MODO_PUENTE = "modificacion"

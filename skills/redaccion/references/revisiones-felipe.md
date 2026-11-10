@@ -82,3 +82,14 @@ resultado («restricción operativa», «operación normal») y pide identificar
 
 Control del 05-11-2026, 22:40: el docx sigue con SHA-256 `015c1ed3e044…1f1d` (guardado a las 15:50). Se comparó su
 texto con la R35. Sólo aparecen las 22 marcas y el pie de la Figura 2-3, sin cambios nuevos.
+
+
+## Aclaración de Vicente | 06-11-2026
+
+El uso de capacidad transitoria fue confirmado internamente. Las menciones a Fran en este registro describen una consulta interna, no texto destinado al cliente. No citar personas ni acuerdos internos en el informe. Para Cumbres, la base de partida es la BD de corto plazo de agosto de 2026. Conservar los cambios de Felipe y revisar sus comentarios contra el último guardado.
+
+
+### 06-11-2026 | Cumbres RB, último guardado y council editorial
+
+Registro íntegro antes/después y comentarios con ancla y estado en C:/Users/vicen/Documents/Projects/Cumbres del Ñuble/Orquestación/council_redaccion_0611/cambios_y_comentarios.txt. Copia de fuente y SHA en la misma carpeta. Felipe pide explicitar escenarios y contingencias en resumen y conclusiones, compactar espacios y cerrar comparando conexiones. Vicente confirma conservar códigos con su significado y mantener slack para el final. Las propuestas serán contrastadas por council antes de editar Word.
+

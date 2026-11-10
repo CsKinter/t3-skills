@@ -109,3 +109,12 @@ para conseguir una frase más corta. En ediciones extensas, registrar el antes/d
 
 Revisa sujetos, conectores repetidos, «;» y «:», oraciones de más de 40 palabras, términos que cambian de nombre y
 referencias a figuras y tablas. Conserva siempre las ediciones manuales de Vicente.
+
+
+## Preferencias confirmadas | 06-11-2026
+
+- Los acuerdos con Fran, Francisco, Felipe u otros integrantes del equipo son antecedentes internos. No mencionar sus nombres, conversaciones ni aprobaciones en el informe del cliente para justificar criterios. Exponer el criterio técnico y su fuente documental aplicable, sin atribuir a una norma lo que sólo fue un acuerdo interno. Los créditos formales de autoría y revisión conservan su función.
+- Evitar dos puntos y punto y coma en la prosa explicativa. Usar oraciones completas y conectores. Los rótulos y referencias conservan sus separadores necesarios. Esta preferencia reemplaza las excepciones anteriores para esa prosa.
+- Conservar los códigos de escenarios y contingencias cuando faciliten identificar una conclusión o un énfasis. Combinar nombre físico y código entre paréntesis, o código y significado entre paréntesis. No eliminarlos de forma general.
+- Usar «BESS en modo carga» o «BESS en carga», sin «en proceso de carga». Evitar «confluyen» en estas explicaciones y elegir el verbo físico que corresponda.
+- Aplicar las preferencias de Felipe registradas en references/revisiones-felipe.md. Precisar la fecha de la base, el umbral exacto, la restricción operativa y la capacidad en operación normal o ante una contingencia. Una consulta interna del revisor nunca se convierte en una atribución personal en el informe.

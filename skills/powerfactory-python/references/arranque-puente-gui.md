@@ -1,12 +1,17 @@
 # Abrir proyecto y arrancar el puente por GUI
 
 Procedimiento comprobado el 05-11-2026 en PowerFactory 2025, Windows, con el usuario fuera del PC.
-Usarlo para **abrir el proyecto solicitado y conectar el puente de lectura**, no para modificar el modelo.
+Usarlo para **abrir el proyecto solicitado y arrancar el puente en el modo autorizado**: lectura por defecto;
+modificación o limpieza sólo si el usuario autorizó ese modo y alcance. El lanzador elegido determina el modo:
+`pf_bridge.py`, `pf_bridge_modificar.py` o `pf_bridge_limpieza.py` (nombres verificados en `scripts/`). Arrancar no
+autoriza cambios de planta fuera del alcance acordado.
 
 ## Autorización y elección de interfaz
 
-- El usuario puede autorizar al agente a abrir PF, cambiar de proyecto y arrancar el puente. Conservar esa autorización
-  durante la tarea; no volver a exigir que lo haga personalmente por una instrucción histórica de la skill/AGENTS.
+- El usuario puede autorizar al agente a abrir PF, cambiar de proyecto y arrancar el puente en un modo concreto
+  (lectura, modificación o limpieza). Esa autorización cubre el proyecto y el alcance acordados; conservarla durante la
+  tarea y no volver a exigir que lo haga personalmente por una instrucción histórica de la skill/AGENTS. Si no hay
+  autorización, preguntar modo y alcance antes de arrancar; no elevar a otro modo por iniciativa propia.
 - Preferir Computer Use cuando funciona y seguir sus instrucciones. El error `Computer Use native pipe is unavailable
   ... (os error 2)` indica que esa interfaz no pudo conectar con su helper; no demuestra que PowerFactory haya fallado.
 - La ruta PowerShell de esta referencia es independiente del helper. Usarla cuando el usuario pida expresamente ese
@@ -66,7 +71,9 @@ conversión las coordenadas de la imagen reducida. No reutilizar las de esta ses
    dentro del caso (no en Network Data). En la sesión se creó `Puente PF lectura`:
    - `Basic Options → Name`: `Puente PF lectura`.
    - `Script → External → Script file`: `C:\Users\vicen\.claude\skills\powerfactory-python\scripts\pf_bridge.py`.
-   - Conservar Interface Version 2 (valor mostrado). No seleccionar `pf_bridge_modificar.py` ni editar el script.
+   - Conservar Interface Version 2 (valor mostrado). En un arranque de lectura, no seleccionar `pf_bridge_modificar.py`
+     ni `pf_bridge_limpieza.py` ni editar el script. Si el usuario autorizó modificación o limpieza, apuntar el ComPython
+     al lanzador correspondiente (`pf_bridge_modificar.py` / `pf_bridge_limpieza.py`).
 6. Cerrar el editor guardando su configuración y salir de los cuadros anidados de propiedades/Contents hasta el
    **Data Manager principal**. El primer Execute desde el editor anidado no levantó el puente; el estado seguía detenido.
    No considerar ese clic como éxito. En tablas, doble clic en el **nombre** puede editarlo; usar el icono para abrir
@@ -84,8 +91,10 @@ python C:\Users\vicen\.claude\skills\powerfactory-python\scripts\pf_send.py esta
 python C:\Users\vicen\.claude\skills\powerfactory-python\scripts\pf_send.py -c "resultado = {'proyecto': app.GetActiveProject().GetFullName(), 'caso': app.GetActiveStudyCase().GetFullName(), 'escenario': app.GetActiveScenario().GetFullName() if app.GetActiveScenario() else None}"
 ```
 
-Exigir `vivo: true`, latido reciente, PID esperado, `modo: solo lectura`, `allow_calc: false`, proyecto/caso correctos
-y una consulta real con resultado `ok`. En la sesión: PID 12676, inicio 05-11-2026 12:50:09, Bulí/03_15 SS,
+Exigir `vivo: true`, latido reciente, PID esperado, proyecto/caso correctos y una consulta real con resultado `ok`.
+En el arranque de lectura, además `modo: solo lectura` y `allow_calc: false`; si el usuario autorizó modificación o
+limpieza, exigir el modo esperado (`modificación`/`limpieza`), donde el cálculo lo gobierna la política de ese modo y no
+`allow_calc`. En la sesión: PID 12676, inicio 05-11-2026 12:50:09, Bulí/03_15 SS,
 escenario `2_Base_Restringido\E03_VES_DA_15_BESS-D`, `escenario_modificado: false`; consulta de identidad en 0,34 s.
 La salida de PF mostró `Puente Claude activo ... (modo solo lectura)`.
 
