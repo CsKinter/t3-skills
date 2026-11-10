@@ -5,7 +5,7 @@ cuyo almacenamiento es propio, varias cosas pasan de «dato del fondo» a «obje
 abiertas en §5.
 
 El tratamiento de un híbrido como conjunto con tope común, la prorrata por potencia disponible y el costo de
-oportunidad pertenecen a `metodologia-ds32.md`, que no es la vigente.
+oportunidad calculado por el SCED pertenecen a `metodologia-ds32.md`, que no es la vigente.
 
 Marcas: **[V]** verificado, **[C]** criterio de estudio que se confirma con Vicente.
 

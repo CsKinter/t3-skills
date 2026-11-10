@@ -17,7 +17,7 @@ algo de aquí en un informe, **verificar la vigencia del decreto, su norma técn
 |---|---|---|
 | Base de la prorrata | Potencia máxima | Potencia disponible |
 | Híbrido (renovable con almacenamiento) | Como venga en la base del CEN, normalmente dos unidades independientes | Un conjunto con tope común de inyección y retiro, y potencia disponible propia |
-| BESS antes que ERNC | Criterio del estudio | Resultado del orden de costos, cuando los BESS tengan costo de oportunidad |
+| BESS antes que ERNC | Criterio del estudio, justificado por el costo del BESS | Sin cambio en el orden: los BESS siguen con costo. El SCED cambia cómo se calcula (costo de oportunidad en vez del precio de la barra donde carga) |
 | Umbral de participación, objetivo de carga, contingencias | Criterios de EE | Sin cambio: el decreto no los trata |
 
 ## 2. Prorrata por potencia disponible
@@ -51,9 +51,12 @@ algo de aquí en un informe, **verificar la vigencia del decreto, su norma técn
 
 ## 4. Costo de oportunidad y orden de recorte
 
-- De forma transitoria, ERNC y almacenamiento sin costo de oportunidad forman un solo grupo de costo cero.
-- Después, los BESS tendrán costo de oportunidad. «BESS primero» dejaría de ser un criterio de EE para ser la
-  consecuencia del orden de costos.
+- Los BESS **tienen costo antes y después del SCED**: hoy se valoriza con el precio de la barra donde cargan. Por eso
+  la vigente ya restringe «BESS primero», y el DS 32 conserva ese orden en la transitoria y en la permanente.
+- Lo que cambia con el SCED es **cómo se calcula** ese costo: costo de oportunidad del almacenamiento en vez del valor
+  de la barra de carga. El orden BESS → ERNC no cambia.
+- No se debe modelar a los BESS como un grupo de costo cero junto con las ERNC (lectura descartada el 10-11-2026).
+- Dentro de un conjunto propio, ceder primero la descarga y después el PV es decisión del titular, no regla del CEN.
 - No se verificó la fórmula del costo de oportunidad ni el estado de la norma técnica.
 - El decreto permite al Coordinador apartarse de la prorrata por condiciones de seguridad.
 
@@ -75,5 +78,6 @@ de EE y se declaran así. Los PMGD quedaron fuera del alcance explorado.
 3. Modelado de los conjuntos: el proyecto y cada vecino, con su tope de inyección y retiro documentado. Qué se hace
    con los que la base del CEN trae como unidades separadas.
 4. Costo único o separado para el conjunto propio.
-5. Orden de recorte: grupo único de costo cero, o BESS con costo de oportunidad.
+5. Costo de los BESS en el estudio: precio de la barra de carga (antes del SCED) o costo de oportunidad (con SCED).
+   El orden BESS → ERNC se mantiene en ambos casos.
 6. Cómo se declara en el informe, con la atribución normativa correcta.

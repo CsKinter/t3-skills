@@ -42,7 +42,7 @@ Hay dos metodologías y no se mezclan:
   aplicó y se entregó en Cumbres. Prorrata por potencia máxima, el modelo sigue la base del CEN, «BESS primero» como
   criterio del estudio. **Es la que se usa salvo decisión expresa.**
 - **DS 32** (`references/metodologia-ds32.md`): prorrata por potencia disponible, híbridos como conjunto con tope
-  común, costo de oportunidad de los BESS. Quedó explorada y archivada, sin validar en PowerFactory. Se usa sólo si
+  común, costo de oportunidad de los BESS con el SCED (el orden «BESS primero» no cambia). Quedó explorada y archivada, sin validar en PowerFactory. Se usa sólo si
   Vicente decide adoptarla en un estudio, o como sensibilidad interna.
 
 Al empezar un estudio se pregunta cuál rige y queda como decisión en el tablero. Para un proyecto con COD posterior a

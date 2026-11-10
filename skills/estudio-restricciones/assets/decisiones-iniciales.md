@@ -67,7 +67,7 @@ No se recorren en un estudio con la metodología vigente. Detalle en `references
 | G2 | Base de la prorrata según el COD: potencia máxima (transitoria) o disponible (permanente) | Con solar y eólica en el mismo grupo cambia el resultado |
 | G3 | Modelado de híbridos: el proyecto y cada vecino como conjunto con tope común de inyección y retiro | Datos del informe de autorización de conexión |
 | G4 | Costo único o separado del conjunto propio | |
-| G5 | Orden de recorte: grupo único de costo cero, o BESS con costo de oportunidad | |
+| G5 | Costo de los BESS: precio de la barra de carga (antes del SCED) o costo de oportunidad (con SCED) | El orden BESS → ERNC no cambia; los BESS nunca van a costo cero |
 | G6 | Verificar vigencia del decreto, norma técnica y guía del CEN antes de citar | |
 
 ## F. Trabajo con agentes
