@@ -136,6 +136,7 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 
 ## 6. Lessons (dated; add new ones on top)
 
+- 2026-11-09: DeepSeek child A ended its turn "still waiting for the diagnostic run" with the run alive in the background → reported `completed` with no result. Brief rule: never end the turn waiting on a run; wait in the foreground (sleep 60 + `ps -p` loop, ≤9 min per call). On such a completion, check `ps` + bitácora and resume via `t3_thread_send` on the child thread.
 - 2026-11-06: An async child that has to wait for a long external job (PF run, bridge command) will end its turn with 'I'll keep checking' and never come back: nobody wakes it. Put the wait inside the turn: give it a blocking wait command (loop with sleep, ≤ its terminal timeout) and say explicitly 'do NOT end your turn while waiting; ending it = abandoning the task; repeat the blocking command until done or until <hour>'. Or split launch and wait/upload into two children.
 
 - 2026-11-06: Any cache or memo a child adds (init point, compiled library, Jacobian template) must key on every input that changes the answer. Bit-identity gates on one fixed case cannot see a stale-cache bug. Require in the brief a test that changes one input (a parameter, not just the state) after a first call and gets a different answer, and read the cache key yourself at merge.
