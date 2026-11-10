@@ -14,7 +14,8 @@ script de cada proyecto (o `scripts/excel_com.ps1`).
   **proyecto** (qué es, cuántos MW tiene, si el BESS tiene RCA, qué dice el IAC),
   usar la skill `proyectos-aa-seia`: trae la base pública de Acceso Abierto, el
   buscador de cartas y el de pertinencias, y las trampas de lectura de PDF.
-- **Nunca escribas en OneDrive** (`...\OneDrive - Electrical Studies Corp\...`): sólo leer. Entregables a Documentos.
+- **No escribas en OneDrive** (`...\OneDrive - Electrical Studies Corp\...`) salvo que el AGENTS.md del proyecto lo
+  permita para una carpeta concreta y el usuario lo apruebe. Por defecto, sólo leer y entregar a Documentos.
 - **No pises archivos del usuario**: si el Excel o el informe está abierto (`~$...`) o cambió desde tu última escritura,
   construye en scratch y espera/compara antes de copiar.
 - **Descargar archivos (PGP, PDF) requiere el OK del usuario** en el chat.
@@ -44,9 +45,13 @@ Detalle de endpoints y conceptos: `references/infotecnica.md`; obras futuras: `r
    en una nota. Con varias secciones, **la menor**.
 4. **Equipos de paño**: el menor de cada tipo en el paño (3 desconectadores → el menor; a igual valor, el mejor certificado).
    Int “Corriente nominal” [A]→kA; Desc y TO “Corriente nominal” [kA]; TTCC “**Sobrecarga permanente**” [kA] (TAP × factor).
-   CCSS no está en IT → S/I. Sin trampa de onda registrada → **N/A** (no S/I). Tap o estructura → N/A.
+   **CCSS sí está en IT** (tipo «Condensadores Serie», `condensadores-series`), pero `it.py` aún no lo consulta y
+   escribe S/I: traerlo aparte según `references/capacidad-por-condicion.md` §2. Sin trampa de onda registrada →
+   **N/A** (no S/I). Tap o estructura → N/A.
 5. **Límite de la línea** = mín(conductor, equipos de ambos extremos) por condición, con el equipo que limita
-   (`Conductor`, `Int`, `Desc`, `TO`, `TTCC`).
+   (`Conductor`, `Int`, `Desc`, `TO`, `TTCC`, `CCSS`). Cada valor lleva condición (N o post-contingencia), duración y
+   temperatura. Capacidad de corta duración, factores de sobrecarga, fuentes y el procedimiento completo de
+   adecuación de base de datos: `references/capacidad-por-condicion.md`.
 6. **Doble circuito** (C1/C2 son tramos distintos en IT): una fila por línea con el circuito **más limitante**; dilo si difieren.
 7. **Seccionamientos (\*)**: los tramos nuevos que cortan una línea existente toman los parámetros de la original.
 8. **Líneas futuras**: una sola fila, sin detalle de paños, con la capacidad mínima del PET/NUP en kA

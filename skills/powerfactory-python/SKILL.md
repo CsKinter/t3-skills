@@ -156,6 +156,8 @@ Detalle y límites: `references/bridge.md`.
 | Fotos de diagramas (WMF → PNG) | `references/bridge.md`, «Fotos de diagramas» | `scripts/wmf2png.ps1` |
 | Objetos gráficos y topología (cubículos, acoples, barras auxiliares) | `references/object-model.md` | — |
 | Estudio de restricciones: preparar escenarios, convergencia y tensión, N-1, factores con ficticios, prorrata, iteraciones | `references/estudio-restricciones.md` | `Cumbres del Ñuble\herramientas\estudio_cumbres\` |
+| Estructura final de la BD de un estudio, validación de escenarios, contraste entre herramientas, orden y cierre; trampas de PF posteriores al 10-10-2026 (dos reguladores de tensión en un terminal, solución espuria) | `references/cierre-bd.md` | — |
+| Método del estudio, decisiones que se cierran con el usuario, BESS e híbridos, informe | skill `estudio-restricciones` | — |
 | Replicar el flujo AC de PF fuera de PF (pypowsybl): qué extraer, modelo de cada equipo (taps, Tr3, acoplamientos, controles, SVC), convenciones de signo, validación por capas | `references/modelo-flujo-pf.md` | `Cumbres del Ñuble\.revision_diagrama\factores_lineales_2310\scripts\` |
 
 Documentación oficial del modelo de cada equipo (ecuaciones y tablas de atributos): `C:\Program Files\DIgSILENT\

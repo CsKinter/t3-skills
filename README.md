@@ -1,14 +1,16 @@
-# t3-skills — shared skills across all T3 Code environments
+# t3-skills
 
-One source of truth for every machine. OpenCode discovers `skills/` via the `skills` array in `opencode.json`, so a single `git pull` syncs all environments in one go.
+Fuente única de las skills de Vicente para todos los agentes (T3 Code / OpenCode, Claude Code, Codex) y todos los
+equipos. Se edita aquí, se confirma en git y los demás entornos lo ven por enlaces.
 
-## Install on any machine (Mac / Windows)
+## Instalar en un equipo
 
 ```bash
 git clone https://github.com/CsKinter/t3-skills.git ~/t3-skills
 ```
 
-Then add to global `opencode.json` (`~/.config/opencode/opencode.json` or `%USERPROFILE%\.config\opencode\opencode.json`):
+**OpenCode / T3 Code**: agregar al `opencode.json` global (`~/.config/opencode/opencode.json`), conservando el resto
+de la configuración, y recargar con `/reload`:
 
 ```jsonc
 {
@@ -17,17 +19,45 @@ Then add to global `opencode.json` (`~/.config/opencode/opencode.json` or `%USER
 }
 ```
 
-Merge with existing config — keep your `mcp` section. Reload with `/reload`.
+**Claude Code y Codex (Windows)**: crear los enlaces de cada skill en `~/.claude/skills`, `~/.codex/skills` y
+`~/.claude_work/skills`:
 
-## Add a skill everywhere
-
-```bash
-cp -R ~/.config/opencode/skills/my-skill ~/t3-skills/skills/
-cd ~/t3-skills && git add skills/my-skill && git commit -m "add my-skill" && git push
-# on every other machine:
-cd ~/t3-skills && git pull
+```powershell
+powershell -ExecutionPolicy Bypass -File "$HOME\t3-skills\instalar.ps1"
 ```
 
-## Contents
+Se puede repetir. Los enlaces existentes se rehacen y las carpetas reales que encuentre se mueven a
+`~/.claude/skills_backups/`, nunca se borran. Volver a correrlo después de agregar una skill nueva.
 
-- `skills/mercadolibre-api/` — MercadoLibre search + AI ranking for deal bots (Telegram/WhatsApp).
+## Trabajar
+
+```bash
+cd ~/t3-skills && git pull          # antes de empezar en otro equipo
+# editar skills/<nombre>/...
+git add -A && git commit -m "<qué cambió>" && git push
+```
+
+No editar las skills desde `~/.claude/skills` pensando que es otra copia: es la misma carpeta.
+
+## Contenido
+
+Estudios eléctricos:
+
+- `estudio-restricciones/` — conducción de un estudio de restricciones de principio a fin: fases, decisiones
+  iniciales, ciclo, BESS e híbridos, sensibilidades, informe, plantillas de proyecto.
+- `powerfactory-python/` — scripts y puente para DIgSILENT PowerFactory, receta de cálculo y cierre de la base de datos.
+- `parametros-sen/` — capacidades y parámetros de instalaciones (Infotécnica, plan de expansión, PGP).
+- `proyectos-aa-seia/` — qué es realmente un proyecto: Acceso Abierto, SEIA, CNE.
+- `informe-ee/` — edición de informes Word de EE, figuras, revisiones y oficialización.
+- `redaccion/` — estilo de redacción de Vicente.
+- `ppt-ee/` — presentaciones con la plantilla de EE.
+- `ee-estudios/` — preferencias de presentación y de trabajo en estudios eléctricos.
+
+Trabajo con agentes:
+
+- `council/` — revisión con varios modelos.
+- `usage-conscious-agents/` — delegación con bajo consumo de tokens.
+
+Otros:
+
+- `mercadolibre-api/` — búsqueda y ranking en MercadoLibre para bots.
