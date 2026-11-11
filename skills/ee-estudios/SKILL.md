@@ -22,6 +22,9 @@ Leer solamente los módulos necesarios para la tarea. En cambios mixtos, combina
 | Series históricas, recursos, hidráulicas y trazabilidad | [Análisis de datos](references/analisis-datos.md) |
 | Capacidades térmicas, paños, repotenciamientos y planificación | [Parámetros SEN](references/parametros-sen.md) |
 
+Para conducir un estudio de restricciones completo (fases, decisiones iniciales, ciclo, BESS e híbridos, plantillas de
+proyecto) usar la skill `estudio-restricciones`. Esta skill conserva las preferencias de presentación y de trabajo.
+
 ## Interpretar correctamente las reglas
 
 - **Preferencia:** forma habitual de escribir o presentar del usuario; aplicarla salvo instrucción actual distinta.

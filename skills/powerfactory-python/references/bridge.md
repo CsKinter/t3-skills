@@ -2,7 +2,7 @@
 
 **Índice** (leer sólo la sección que haga falta; ubicarla con Grep por su encabezado):
 - *Puesta en marcha* y [Arranque por GUI autorizado](arranque-puente-gui.md) (incluye ruta PowerShell): *Uso (Claude)* se lee siempre antes del primer comando.
-- *Modo solo lectura* y *Modo modificación*: qué permite cada modo, variation de sesión, marca `[CdN]`, diario y `deshacer`.
+- *Modo solo lectura*, *Modo limpieza* y *Modo modificación*: qué permite cada modo, variation de sesión, marca `[CdN]`, diario y `deshacer`.
 - *Casos de estudio y escenarios* y *Escenarios: regla de guardado*: antes de activar o guardar un escenario.
 - *Pérdida de conexión* y *Límites*: cuando un comando no responde o falla.
 - *Output Window*: mensajes de PF que vuelven con cada comando.
@@ -14,10 +14,13 @@ corra cada script. Comunicación por carpeta local (`%USERPROFILE%\pf_bridge`), 
 
 ## Puesta en marcha (una vez por sesión)
 
-Normalmente lo hace el usuario. Con autorización expresa, el agente puede arrancar el puente de lectura por GUI;
-ver [el procedimiento comprobado y su helper PowerShell](arranque-puente-gui.md). Esto no autoriza el modo modificación
-ni cambiar la seguridad del puente. La autorización vigente en el chat prevalece sobre instrucciones históricas de
-«sólo el usuario»; no pedirla otra vez para la misma tarea.
+Normalmente lo hace el usuario. Con autorización del usuario para el proyecto y la tarea, el agente puede arrancar el
+puente por [la ruta GUI/PowerShell comprobada](arranque-puente-gui.md), eligiendo el lanzador del modo autorizado:
+`pf_bridge.py` (lectura), `pf_bridge_modificar.py` (modificación) o `pf_bridge_limpieza.py` (limpieza). Si ya está
+autorizado, no volver a pedirlo para la misma tarea; si no, preguntar modo y alcance antes de arrancar. La autorización
+de arranque no autoriza cambios de planta ajenos al alcance acordado, ni cambiar la seguridad del puente, ni elevar el
+modo por iniciativa propia. La autorización vigente en el chat prevalece sobre instrucciones históricas de «sólo el
+usuario».
 
 1. En PF, en el caso de estudio activo (o en la carpeta Scripts del proyecto): *New Object → Python Script (ComPython)*.
 2. En "Script", apuntar a `C:\Users\vicen\.claude\skills\powerfactory-python\scripts\pf_bridge.py`. Ejecutar.
@@ -57,7 +60,28 @@ lo ejecute o autorice el arranque. No enviar comandos al puente caído en bucle.
 - `READ_ONLY = False` (modo escritura) entrega el `app` real: sólo cuando el usuario lo pida explícitamente, y siguiendo
   las reglas de escritura segura de SKILL.md (variation + stage verificado, dry run primero).
 
-## Modo modificación (`pf_bridge_modificar.py`, lo lanza el usuario)
+## Modo limpieza (`pf_bridge_limpieza.py`; 06-11-2026)
+
+Escritura libre sobre el proyecto activo para ordenar la BD: borrar, mover, renombrar, cambiar horas de stages y cerrar
+diagramas. No crea variation de sesión. Cada llamada que modifica queda en `~/pf_bridge/diario_limpieza_<fecha>.jsonl`,
+incluidas `AddCopy` y las ejecuciones `Execute`: la política permite ejecutar comandos de cálculo, pero no hay variation ni
+`deshacer`, así que el diario registra y no revierte. Guardas: nada con `_secure` en la ruta y nunca `IntScenario.Save()`.
+Se usa sólo con un pedido explícito de limpieza y dentro del alcance autorizado. Usar dry run y luego aplicar, y al final
+medir N en los escenarios contra una línea base. Lo verificado en PF real:
+- **Fusionar stages.** Desactivar las variations de origen. Crear el stage destino en la variation de llegada, con una hora
+  ≤ hora de estudio, y llamar `S.Activate()`: devuelve 16 y mueve el study time, así que se restaura con `c.SetStudyTime(T0)`.
+  Confirmar que el stage que registra es S. Después, `origen.ApplyChanges()` (sobre un stage inactivo, devuelve 0) copia
+  sus entradas al stage que registra.
+- **Mover.** `destino.Move(obj)` devuelve 0, con un caso sin variations activas («Base SEN»).
+- **Escritorio.** El tablero del caso es `SetDesktop`, con hijos `SetDeskpage` (`pGrph` es el diagrama). `page.Delete()`
+  cierra la pestaña y `desktop.AddCopy(pagina_de_otro_caso)` abre una. Una página sólo funciona en casos cuya hora de
+  estudio activa el stage que creó el diagrama.
+- **Nombres.** `loc_name` de casos, carpetas y escenarios no queda en variations: el cambio es directo.
+
+## Modo modificación (`pf_bridge_modificar.py`)
+
+Se arranca sólo con autorización del usuario para ese modo y alcance (ver *Puesta en marcha*); las reglas siguientes
+aplican igual si lo lanzó el usuario o el agente.
 
 **Horas de las stages (aprendido en PF real, 05-10-2026):** si dos stages con la misma hora de activación modifican el
 mismo objeto (o una agrega un objeto y otra lo modifica), PF marca "Variation conflict" y **no activa ninguna stage**.

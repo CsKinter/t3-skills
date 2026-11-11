@@ -10,6 +10,12 @@ conexión (POI 1 Tiquel 220 kV, POI 2 Bulí 154 kV) y cuatro escenarios (E01–E
 corrieron: `Cumbres del Ñuble\herramientas\estudio_cumbres\` (ver su README; no abrirlo salvo que se pida). Fuente escrita del método en el proyecto:
 `Metodología restricción - Cumbres del Ñuble.md`.
 
+**Cómo leer esta receta en otro estudio.** La mecánica de PF (API, orden de operaciones, trampas) es general. Los
+criterios (umbral del 20 %, objetivo del 99 %, BESS primero, qué contingencias cuentan) y todos los nombres y cifras
+son de Cumbres: se confirman con el usuario en cada estudio. El método, las decisiones que hay que cerrar y el
+tratamiento de BESS e híbridos están en la skill `estudio-restricciones`. La estructura final de la BD, la validación
+y el cierre están en `cierre-bd.md`, que **manda sobre §0.1** en nombres de casos y carpetas.
+
 Reglas generales que valen en todo el estudio:
 - **Activar y afirmar antes de escribir**: `cambiar_caso(r"POI 2 - Buli\03_15 SS", r"POI 2 - Buli\1_Irrestrictos\E04_…")`
   y `assert "1_Irrestrictos" in app.GetActiveScenario().GetFullName()`. Los nombres se repiten entre carpetas de POI:
@@ -25,8 +31,10 @@ Reglas generales que valen en todo el estudio:
 
 1. **Estructura** (Operation Scenarios `00_<Proyecto>\<POI>\`): `Irrestrictos_secure` (originales del cliente),
    `Base_secure` (bases del modelo), `1_Irrestrictos` (punto de partida del ciclo), `2_Restringidos` (resultado, 1:1 con
-   tablas y figuras del informe), `9_Trabajo` (pruebas; el usuario decide qué se borra). Casos: `Study Cases\00_…\<POI>\
-   {01_35 CS, 02_25 CS, 03_15 SS}`. Nombres de escenario tipo `E01_DIA_DA_25_BESS-C`, `E04_MAD_DB_15_BESS-D`.
+   tablas y figuras del informe), `99_Respaldo` (trabajo e intentos, en subcarpetas fechadas; nada se borra). Casos:
+   `Study Cases\00_…\<POI>\{01_25 CS, 02_15 SS}`. Nombres de escenario tipo `E01_DIA_DA_25_BESS-C`,
+   `E04_MAD_DB_15_BESS-D`. (Durante el cálculo de Cumbres los casos se llamaron `01_35 CS`, `02_25 CS`, `03_15 SS` y la
+   carpeta de pruebas `9_Trabajo`: así aparecen en los ejemplos de abajo y en los scripts anteriores al 06-11-2026.)
 2. **Copiar** desde `_secure` (`carpeta_escenarios`, `copiar_escenario(..., carpeta=...)`, sin sufijo) y activar la copia.
    **PF no copia el escenario activo** (`AddCopy` devuelve None): activar otro antes.
 3. **Receta de despacho escrita** (BESS del norte de Charrúa 100 / −100 / 0 %, centrales como en el perfil del cliente,
@@ -138,7 +146,10 @@ cambiaba el N-1.
    (no en el borde de la solución: +5 MW ahí dio factores absurdos). Factores de ~200 %/100 MW son válidos si la
    contingencia deja una parte radial.
 4. **Participantes**: factor ≥ 20 % del mayor de la iteración; si hay BESS con MW, sólo BESS; si no, el resto de
-   unidades de costo marginal 0 (sin PMGD). Factores reutilizados si el par se repite.
+   unidades de costo marginal 0 (sin PMGD). Factores reutilizados si el par se repite. El umbral se calcula **por
+   signo** (`fm = max(mx, −mn)`) y el máximo se toma entre las acciones que de verdad alivian, excluyendo PMGD antes:
+   con un umbral sin signo, factores de −0,5 % dejaron en cero 815 MW de BESS. En un corredor con embalse aguas arriba
+   el embalse baja antes que los BESS (decisión del 02-11-2026; ver `estudio-restricciones/references/metodologia-vigente.md` §4).
 5. **Prorrata técnica (guía CDC N°1-2024)**: repartir la colocación total X a prorrata de Pmax; la unidad cuya cuota
    supera su despacho base queda en la base y se reparte de nuevo. Búsqueda de X: `x1 = base − (l0 − OBJ + BANDA/2)/fg`
    (fg = mayor factor, %/MW) y luego secante hacia OBJ − BANDA/2; si el flujo falla, y = 1e9 y punto medio. OBJ = 99 %,
@@ -156,7 +167,12 @@ cambiaba el N-1.
     (`c02_poi2.py`).
 11. **Contingencias de 500 kV**: no restringir 154 kV por una contingencia de 500 kV («el sistema no se opera así»); el
     sur se trata como un todo (ficticios en Charrúa 500, Entre Ríos 500 y Charrúa 220; prorrata del conjunto al sur de
-    Charrúa, BESS primero).
+    Charrúa, BESS primero). Después del 02-11-2026 los grupos pasaron a definirse por salto de factor y el embalse a
+    bajar antes que los BESS; no se verificó si las tres puertas siguieron en uso.
+12. **Medir los factores en el estado de cierre**: cerca del límite de convergencia se inflan (9,8 donde el sano era
+    5,0), y corregir el reactivo del irrestricto los cambia (un factor pasó de 26 % a 9 %). Remedir tras cada corrección.
+13. **Verificación independiente del cierre**: rehacer el despacho desde los cambios registrados y comprobar que
+    reproduce el resultado. Un cierre que no lo pasa es inválido aunque haya circulado.
 
 Informe: % restringido por unidad y total (sobre Pmax) en tablas, MW en la prosa; nunca «no converge»; «iteración» no va
 como título. Está autorizado guardar cada copia restringida una vez verificado el N-1 completo.
@@ -176,7 +192,7 @@ como título. Está autorizado guardar cada copia restringida una vez verificado
 
 | Objeto | Hecho |
 |---|---|
-| ComLdf | `iopt_lim`, `iopt_plim`, `iopt_at`, `iopt_asht`, `ictrlx` (lazos externos), `itrlx` (Newton), `iopt_noinit` (1 caliente, 0 plano), `errlf`, `erreq`; `iopt_init` no existe. `iopt_at = 1` con límites no convergió (40 máquinas fijadas). |
+| ComLdf | `iopt_lim`, `iopt_plim`, `iopt_at`, `iopt_asht`, `ictrlx` (lazos externos), `itrlx` (Newton), `iopt_noinit` (1 caliente, 0 plano), `errlf`, `erreq`; `iopt_init` no existe. `iopt_at = 1` con límites no convergió (40 máquinas fijadas). `i_power = 0` (ecuaciones de corriente) saca de una segunda solución espuria de tensión baja; restituir a 1 al cambiar de escenario. `iopt_pq = 1` se descartó porque cambia la física. |
 | ElmGenstat | `pgini`/`qgini` y límites de Q **por unidad** (total = × `ngnum`); BESS cargando = `pgini` < 0; `av_mode` ∈ constv/constq/constc (P-cosφ), `mode_inp`, `cosgini`, `pf_recap`, `usetp`, `cQ_max/cQ_min`, `P_max`, `Pmin_uc/Pmax_uc`, `sgn`, `cosn`. Capacidad usada `min(P_max·n, sgn·cosn·n)`. **Con `cosgini = 1` PF ignora `pf_recap`: escribir primero `cosgini`.** BESS cargando: `pf_recap = 1` inyecta Q; descargando, `pf_recap = 0` es capacitivo. Un generador justo en su Sn con cosn = 1 estanca el Newton en contingencias: llevarlo al 99,5 %. |
 | ElmSym | `ip_ctrl == 1` = slack; `Pmin_uc/Pmax_uc`; `cQ_max` depende de P (curva PQ). |
 | ElmTr2 / TypTr2 | `nntap` en el elemento; `ntpmn`, `ntpmx`, `nntap0`, `tap_side`, `dutap` en el tipo. Tap 0 con rango 1–5: PF usa 1 (aviso). ElmTr3 `n3tap_h/m/l`: supuesto. |

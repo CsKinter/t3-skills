@@ -4,7 +4,7 @@ Qué hace: mientras corre, revisa una carpeta (BRIDGE_DIR\\inbox). Cada archivo 
 sesión activa (proyecto, caso de estudio y variations del usuario) y el resultado queda en BRIDGE_DIR\\outbox\\<id>.json
 (salida de print, error con traceback, y el dict `resultado` que llene el comando). Todo queda en bridge.log.
 
-Dos modos (los elige el usuario al lanzar el puente, nunca Claude):
+Tres modos (el usuario autoriza modo y alcance; el agente puede arrancarlos dentro de esa autorización):
 
 - "lectura" (este archivo): el comando recibe una vista del `app` que sólo permite leer atributos y llamar métodos
   Get*/Is*/Has*/Print*/Search*/Find*/Count*. Todo lo demás se rechaza con SoloLectura.
@@ -19,12 +19,15 @@ Dos modos (los elige el usuario al lanzar el puente, nunca Claude):
     * nunca se guarda el escenario de operación, ni se activan/desactivan casos, escenarios o variations ajenas.
     * cada cambio queda en un diario (BRIDGE_DIR\\diario_<variation>.json) con el valor anterior: `deshacer(n)` revierte
       los últimos n (o todos). Desactivar la variation de Claude devuelve además toda la red a su estado original.
+- "limpieza" (lanzar pf_bridge_limpieza.py): escritura directa sobre el proyecto activo, sin variation de sesión; cada
+  llamada que modifica queda en diario_limpieza_<fecha>.jsonl (incluidas AddCopy y Execute). Guardas: nada con "_secure"
+  en la ruta y nunca Save() de escenarios. No hay deshacer: el diario registra y no revierte.
 
 Cómo detenerlo: crear BRIDGE_DIR\\inbox\\STOP (o `python pf_send.py detener`), el botón Break de PF, o esperar
 IDLE_MINUTES sin comandos. Mientras corre, PowerFactory queda ocupado (título "NON-INTERACTIVE MODE"): es normal.
 
-Uso en PF: crear un objeto ComPython (Python Script), apuntar "Script" a este archivo (o a pf_bridge_modificar.py) y
-ejecutarlo. Del lado de Claude: scripts/pf_send.py.
+Uso en PF: crear un objeto ComPython (Python Script), apuntar "Script" a este archivo (o a pf_bridge_modificar.py /
+pf_bridge_limpieza.py, con autorización para ese modo y alcance) y ejecutarlo. Del lado de Claude: scripts/pf_send.py.
 """
 import contextlib
 import datetime
@@ -79,6 +82,15 @@ def marcar(o):
 PREFIJOS_LECTURA = ("Get", "Is", "Has", "Print", "Search", "Find", "Count")
 BLOQUEADOS_RO = {"GetFromStudyCase"}                        # crea el comando en el caso de estudio si no existe
 CALCULO = {"ComLdf", "ComShc", "ComInc", "ComSim", "ComVstab", "ComDiff", "ComSimoutage"}   # ComVstab: sensibilidades / factores de distribución (07-10-2026); ComDiff: flujo diferencial (comparación de resultados on/off), 08-10-2026
+
+# --- Diagnóstico Ref acotado (2026-11-09, autorizado explícitamente por el usuario) -------------------------------
+# Rutas exactas verificadas contra GetFullName() en PF 2025 SP4 (Ñ = U+00D1). No cambiar por loc_name ni por prefijo.
+PRJ_LAB = "\\vicen.IntUser\\Estudios\\ViQSilent_RMS_Lab_20261104.IntPrj"
+PRJ_REF = "\\vicen.IntUser\\Estudios\\[ER] PE Cumbres del Ñuble\\Ref\\2608-BD-OP-COORD-DMAP.IntPrj"
+REF_CASOS = PRJ_REF + "\\Study Cases.IntPrjfolder"
+CASO_REF = REF_CASOS + "\\Base SEN.IntCase"
+CASO_SONDA = REF_CASOS + "\\Base SEN_SONDA_20261109.IntCase"
+ESC_REF = PRJ_REF + "\\Operation Scenarios.IntPrjfolder\\3. Domingo.IntFolder\\Domingo Madrugada.IntScenario"
 # atributos que PF guarda en el escenario de operación (no en la variation) cuando hay un escenario activo
 OPERATIVOS = {"outserv", "nntap", "nntap0", "ntap", "pgini", "qgini", "sgini", "cosgini", "usetp", "qsetp", "pf_recap",
               "plini", "qlini", "slini", "coslini", "scale0", "ncapa", "ncapx", "i_mot", "av_mode", "iv_mode", "ip_ctrl",
@@ -954,6 +966,71 @@ class PoliticaModificacion(object):
         self.propios = [o for o in (_resolver(app, fn) for fn in vigentes) if o is not None]
 
 
+class PoliticaLimpieza(object):
+    """Modo «limpieza» (06-11-2026, pedido explícito del usuario para ordenar la BD): escritura libre sobre el proyecto,
+    sin variation de sesión, con diario de cada llamada que modifica. Puede lanzarlo el agente con autorización del usuario
+    para ese modo y alcance (pf_bridge_limpieza.py).
+    Guardas que se conservan: nada con «_secure» en la ruta se escribe, mueve ni borra; nunca se guarda un IntScenario.
+    `Move` NO se traduce: usar la forma real de la API, `destino.Move(obj)`."""
+    nombre = "limpieza"
+    ESCRIBEN_ATRIB = ("SetAttribute",)
+
+    def __init__(self, bridge_dir):
+        self.ruta_diario = os.path.join(bridge_dir, "diario_limpieza_%s.jsonl" % datetime.datetime.now().strftime("%Y%m%d_%H%M"))
+        self.n = 0
+
+    def _anotar(self, **d):
+        self.n += 1
+        d.update(n=self.n, t=ahora())
+        with open(self.ruta_diario, "a", encoding="utf-8") as f:
+            f.write(json.dumps(d, ensure_ascii=False, default=a_json) + "\n")
+
+    @staticmethod
+    def _ruta(o):
+        try:
+            return o.GetFullName()
+        except Exception:
+            return str(o)
+
+    def _proteger(self, *objs):
+        for o in objs:
+            if _es_objeto_pf(o) and PROTEGIDO in self._ruta(o):
+                raise ErrorModificacion("objeto protegido (%s): %s" % (PROTEGIDO, self._ruta(o)))
+
+    def metodo(self, obj, nombre, fn):
+        if nombre in ("Activate", "Deactivate") and _clase(obj) in CONTEXTO_CLASES:
+            return lambda: CONTEXTO.activar(obj, nombre, fn)
+        if nombre.startswith(PREFIJOS_LECTURA) and nombre not in BLOQUEADOS_RO:
+            return _envuelta(fn)
+        if nombre == "Save" and _clase(obj) == "IntScenario":
+            raise ErrorModificacion("Save() de escenarios no está permitido en modo limpieza")
+
+        def llamada(*a, **kw):
+            a2 = [desenvolver(x) for x in a]
+            kw2 = {k: desenvolver(x) for k, x in kw.items()}
+            self._proteger(obj, *a2)
+            previo = None
+            if nombre in self.ESCRIBEN_ATRIB and a2:
+                previo = get_attr(obj, a2[0])
+            ruta_obj = self._ruta(obj)
+            r = fn(*a2, **kw2)
+            self._anotar(tipo="llamada", obj=ruta_obj, clase=_clase(obj), metodo=nombre,
+                         args=[self._ruta(x) if _es_objeto_pf(x) else x for x in a2], antes=previo, retorno=r)
+            return envolver(r)
+        return llamada
+
+    def asignar(self, obj, nombre, valor):
+        valor = desenvolver(valor)
+        self._proteger(obj)
+        previo = get_attr(obj, nombre)
+        setattr(obj, nombre, valor)
+        self._anotar(tipo="asignar", obj=self._ruta(obj), clase=_clase(obj), atributo=nombre, antes=previo,
+                     despues=get_attr(obj, nombre))
+
+    def reconectar(self, app):
+        pass
+
+
 POLITICA = PoliticaLectura()
 
 
@@ -1087,6 +1164,223 @@ class SalidaPF:
         return c[-n:] if n else c
 
 
+class PoliticaDiagnosticoRef(object):
+    """Modo diagnóstico acotado: NO ejecuta PoliticaModificacion.abrir(); por tanto no crea variation/stage ni
+    llama SetStudyTime (cero retiming al arrancar). Permisos, todos por ruta exacta y registrados en diario:
+      - IntPrj.Activate solo para PRJ_REF. Activar el laboratorio queda en el bootstrap (no se expone aquí).
+      - AddCopy solo de CASO_REF a CASO_SONDA en REF_CASOS, con Ref/Base SEN/Domingo Madrugada activos.
+      - Execute solo de comandos de cálculo que cuelguen de CASO_SONDA, con Ref/CASO_SONDA/ESC_REF ACTIVOS.
+      - SetAttribute solo dentro de CASO_SONDA, con el mismo contexto activo y atributos de simulación.
+      - cambiar_caso solo reafirma CASO_SONDA/ESC_REF exactos (misma guarda de activación).
+    Todo lo demás se rechaza. CreateVersion no se expone: el respaldo es un paso manual del bootstrap.
+    No hay Save/SaveAs/SetStudyTime/Deactivate ni activación del laboratorio desde el puente.
+    """
+    nombre = "diagnóstico Ref (sin retiming)"
+    ATRIBUTOS_SONDA = {"tstop", "iopt_show", "dtout", "dtgrd", "dtgrd_max", "tstart"}
+
+    def __init__(self, app, bridge_dir):
+        self.app, self.dir = app, bridge_dir
+        self.diario = []
+        self.ruta_diario = os.path.join(
+            bridge_dir, "diario_diagnostico_ref_%s.jsonl" % datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        self.proyecto_inicial = app.GetActiveProject().GetFullName() if app.GetActiveProject() else None
+
+    def _anotar(self, entrada, crudo=None):
+        entrada = dict(entrada, n=len(self.diario) + 1, t=ahora())
+        self.diario.append(entrada)
+        with open(self.ruta_diario, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entrada, ensure_ascii=False, default=a_json) + "\n")
+
+    def abrir(self):
+        """Guardia de arranque: solo registra. No crea stages, no adelanta la hora, no escribe atributos PF."""
+        self._anotar(dict(tipo="inicio_diagnostico", proyecto=self.proyecto_inicial, retiming=False,
+                          nota="sin abrir()/sin SetStudyTime/sin CreateObject(IntScheme|IntSstage)"))
+        return None
+
+    def _escenario(self):
+        try:
+            return self.app.GetActiveScenario()
+        except Exception:
+            return None
+
+    def _escenario_nombre(self):
+        e = self._escenario()
+        return e.GetFullName() if e else None
+
+    def _sin_cambios(self):
+        e = self._escenario()
+        if e is not None and get_attr(e, "iModified", 0):
+            raise ErrorModificacion("el escenario activo '%s' tiene cambios sin guardar" % e.loc_name)
+
+    def _en_caso_sonda(self, obj):
+        p = obj
+        for _ in range(12):
+            if p is None:
+                return False
+            if _clase(p) == "IntCase":
+                return p.GetFullName() == CASO_SONDA
+            p = p.GetParent()
+        return False
+
+    def _proyecto(self):
+        try:
+            return self.app.GetActiveProject()
+        except Exception:
+            return None
+
+    def _exigir_ref(self, operacion):
+        """Guarda de contexto: toda operación sensible exige el Ref exacto activo."""
+        prj = self._proyecto()
+        if prj is None or prj.GetFullName() != PRJ_REF:
+            raise ErrorModificacion("%s requiere el Ref exacto activo (activo: %s)" % (
+                operacion, prj.GetFullName() if prj is not None else None))
+        return prj
+
+    def _contexto_sonda(self, operacion="Execute"):
+        """Execute/SetAttribute solo con Ref, Base SEN_SONDA_20261109 y Domingo Madrugada ACTIVOS.
+        El padre del comando no basta: PF calcula sobre el contexto activo (User Manual, caso activo único)."""
+        self._exigir_ref(operacion)
+        caso = self.app.GetActiveStudyCase()
+        if caso is None or caso.GetFullName() != CASO_SONDA:
+            raise ErrorModificacion("%s requiere Base SEN_SONDA_20261109 activo (activo: %s)" % (
+                operacion, caso.GetFullName() if caso is not None else None))
+        esc = self._escenario()
+        if esc is None or esc.GetFullName() != ESC_REF:
+            raise ErrorModificacion("%s requiere el escenario Domingo Madrugada activo (activo: %s)" % (
+                operacion, esc.GetFullName() if esc is not None else None))
+
+    def _contexto_copia(self):
+        """AddCopy solo con el Ref, Base SEN y Domingo Madrugada activos (contexto de origen verificado)."""
+        self._exigir_ref("AddCopy")
+        caso = self.app.GetActiveStudyCase()
+        if caso is None or caso.GetFullName() != CASO_REF:
+            raise ErrorModificacion("AddCopy requiere Base SEN activo (activo: %s)" % (
+                caso.GetFullName() if caso is not None else None))
+        esc = self._escenario()
+        if esc is None or esc.GetFullName() != ESC_REF:
+            raise ErrorModificacion("AddCopy requiere el escenario Domingo Madrugada activo (activo: %s)" % (
+                esc.GetFullName() if esc is not None else None))
+
+    def activar_proyecto(self, obj, nombre, fn):
+        destino = obj.GetFullName()
+        if nombre != "Activate":
+            raise ErrorModificacion("solo IntPrj.Activate está permitido (no %s)" % nombre)
+        # El puente solo puede volver al Ref; activar/desactivar el laboratorio queda en el bootstrap.
+        if destino != PRJ_REF:
+            raise ErrorModificacion("activación de proyecto no permitida desde el puente: %s" % destino)
+        actual = self._proyecto()
+        if actual is None or actual.GetFullName() not in (PRJ_LAB, PRJ_REF):
+            raise ErrorModificacion("proyecto activo no autorizado para activar el Ref: %s" % (
+                actual.GetFullName() if actual is not None else None))
+        self._sin_cambios()
+        antes = self.app.GetActiveProject().GetFullName() if self.app.GetActiveProject() else None
+        r = fn()
+        despues = self.app.GetActiveProject().GetFullName() if self.app.GetActiveProject() else None
+        self._anotar(dict(tipo="activar_proyecto", antes=antes, destino=destino, ret=r, activo=despues))
+        if despues != destino:
+            raise ErrorModificacion("Activate() no dejó activo %s (activo: %s)" % (destino, despues))
+        return r
+
+    def crear_version(self, obj, fn, *a, **k):
+        # El respaldo es un paso manual del bootstrap, nunca una capacidad por comando del puente.
+        raise ErrorModificacion("CreateVersion no está expuesto al puente; el respaldo es un paso manual del bootstrap")
+
+    def copiar(self, padre, origen, nombre):
+        self._contexto_copia()
+        if not (padre.GetFullName() == REF_CASOS and origen.GetFullName() == CASO_REF
+                and nombre == "Base SEN_SONDA_20261109"):
+            raise ErrorModificacion("AddCopy solo de Base SEN a Base SEN_SONDA_20261109 en %s" % REF_CASOS)
+        if [o for o in (padre.GetContents("*", 0) or []) if o.loc_name == nombre]:
+            raise ErrorModificacion("la copia %s ya existe" % nombre)
+        copia = padre.AddCopy(origen, nombre)
+        self._anotar(dict(tipo="copia_sonda", original=origen.GetFullName(),
+                          copia=copia.GetFullName() if copia is not None else None))
+        if copia is None:
+            raise ErrorModificacion("AddCopy de Base SEN devolvió None")
+        return copia
+
+    def escribir(self, obj, attr, valor):
+        if not self._en_caso_sonda(obj):
+            raise ErrorModificacion("SetAttribute solo dentro de la copia SONDA: %s" % obj.GetFullName())
+        self._contexto_sonda("SetAttribute")
+        if attr not in self.ATRIBUTOS_SONDA:
+            raise ErrorModificacion("atributo %s no permitido en la copia SONDA" % attr)
+        antes = obj.GetAttribute(attr)
+        obj.SetAttribute(attr, valor)
+        self._anotar(dict(tipo="set_sonda", obj=obj.GetFullName(), attr=attr, antes=antes, despues=valor))
+        return 0
+
+    def cambiar_caso_diagnostico(self, caso=None, escenario=None):
+        """Sustituto restringido de CONTEXTO.cambiar_caso en diagnóstico Ref.
+
+        Solo acepta los nombres/rutas exactos de CASO_SONDA y ESC_REF y reutiliza la misma guarda de
+        activación de `metodo` (allowlist + _sin_cambios). No permite casos ni escenarios arbitrarios.
+        """
+        if caso is None and escenario is None:
+            raise ErrorModificacion("cambiar_caso en diagnóstico exige Base SEN_SONDA_20261109")
+        self._exigir_ref("cambiar_caso")
+        if caso is not None and str(caso) not in ("Base SEN_SONDA_20261109", CASO_SONDA):
+            raise ErrorModificacion("cambiar_caso en diagnóstico solo permite Base SEN_SONDA_20261109: %r" % (caso,))
+        if escenario is not None and str(escenario) not in ("Domingo Madrugada", ESC_REF):
+            raise ErrorModificacion("cambiar_caso en diagnóstico solo permite Domingo Madrugada: %r" % (escenario,))
+        if caso is not None:
+            obj = CONTEXTO._buscar("study", "IntCase", "Base SEN_SONDA_20261109")
+            if obj.GetFullName() != CASO_SONDA:
+                raise ErrorModificacion("cambiar_caso resolvió un caso distinto de la copia SONDA: %s" % obj.GetFullName())
+            self.metodo(obj, "Activate", obj.Activate)()
+        if escenario is not None:
+            obj = CONTEXTO._buscar("scen", "IntScenario", "Domingo Madrugada")
+            if obj.GetFullName() != ESC_REF:
+                raise ErrorModificacion("cambiar_caso resolvió un escenario distinto del Ref: %s" % obj.GetFullName())
+            self.metodo(obj, "Activate", obj.Activate)()
+        return CONTEXTO.actual()
+
+    def activar_caso(self, obj, nombre, fn):
+        self._exigir_ref("Activate.IntCase")
+        if nombre != "Activate" or obj.GetFullName() not in (CASO_REF, CASO_SONDA):
+            raise ErrorModificacion("caso de estudio no permitido: %s (%s)" % (obj.GetFullName(), nombre))
+        return CONTEXTO.activar(obj, nombre, fn)
+
+    def activar_escenario(self, obj, nombre, fn):
+        self._exigir_ref("Activate.IntScenario")
+        if nombre != "Activate" or obj.GetFullName() != ESC_REF:
+            raise ErrorModificacion("escenario no permitido: %s (%s)" % (obj.GetFullName(), nombre))
+        return CONTEXTO.activar(obj, nombre, fn)
+
+    def metodo(self, obj, nombre, fn):
+        if nombre == "SetAttribute":
+            return lambda attr, valor: self.escribir(obj, attr, valor)
+        if nombre == "CreateVersion" and _clase(obj) == "IntPrj":
+            return lambda *a, **k: self.crear_version(obj, fn, *a, **k)
+        if nombre == "AddCopy":
+            return lambda origen, *partes: envolver(self.copiar(obj, desenvolver(origen), "".join(str(p) for p in partes)))
+        if nombre in ("Activate", "Deactivate") and _clase(obj) == "IntPrj":
+            return lambda: self.activar_proyecto(obj, nombre, fn)
+        if nombre in ("Activate", "Deactivate") and _clase(obj) == "IntCase":
+            return lambda: self.activar_caso(obj, nombre, fn)
+        if nombre in ("Activate", "Deactivate") and _clase(obj) == "IntScenario":
+            return lambda: self.activar_escenario(obj, nombre, fn)
+        if nombre == "Execute":
+            if _clase(obj) in CALCULO and self._en_caso_sonda(obj):
+                self._contexto_sonda("Execute")
+                return _envuelta(fn)
+            raise ErrorModificacion("Execute() solo para comandos de cálculo dentro de Base SEN_SONDA_20261109")
+        if nombre in ("Save", "SaveAs", "Deactivate", "SetStudyTime"):
+            raise ErrorModificacion("%s() no está permitido en diagnóstico Ref" % nombre)
+        if nombre in BLOQUEADOS_RO or not nombre.startswith(PREFIJOS_LECTURA):
+            raise ErrorModificacion("%s() no está permitido en diagnóstico Ref" % nombre)
+        return _envuelta(fn)
+
+    def asignar(self, obj, nombre, valor):
+        raise ErrorModificacion("asignar %s no está permitido en diagnóstico Ref" % nombre)
+
+    def reconectar(self, app):
+        self.app = app
+
+    def resumen(self):
+        return list(self.diario)
+
+
 def main(modo):
     global POLITICA, CONTEXTO
     app = powerfactory.GetApplication()
@@ -1115,6 +1409,15 @@ def main(modo):
             except Exception:
                 pass
             POLITICA, variation = PoliticaLectura(), None
+    elif modo == "diagnostico_ref":
+        POLITICA = PoliticaDiagnosticoRef(app, BRIDGE_DIR)
+        try:
+            POLITICA.abrir()          # solo registra; NO retiming, NO stage, NO SetStudyTime
+        except Exception as e:
+            app.PrintError("Puente Claude: falló la guardia de diagnóstico Ref (%s). Queda en solo lectura." % e)
+            POLITICA = PoliticaLectura()
+    elif modo == "limpieza":
+        POLITICA = PoliticaLimpieza(BRIDGE_DIR)
     else:
         POLITICA = PoliticaLectura()
     etiqueta = POLITICA.nombre + (" + cálculo" if ALLOW_CALC and variation is None else "")
@@ -1141,9 +1444,14 @@ def main(modo):
         if isinstance(POLITICA, PoliticaModificacion):
             extra.update(variation=variation, escenario=POLITICA._escenario_nombre(), cambios=len(POLITICA.resumen()),
                          diario=POLITICA.ruta_diario)
+        elif isinstance(POLITICA, PoliticaDiagnosticoRef):
+            extra.update(variation=None, escenario=POLITICA._escenario_nombre(), cambios=len(POLITICA.resumen()),
+                         diario=POLITICA.ruta_diario, retiming=False,
+                         alcance_calculo="Execute solo en Base SEN_SONDA_20261109 con Ref/caso/escenario exactos")
+        calc = bool(ALLOW_CALC) or isinstance(POLITICA, PoliticaDiagnosticoRef)
         escribir_json(os.path.join(BRIDGE_DIR, "status.json"), dict(
             vivo=vivo, pid=os.getpid(), inicio=datetime.datetime.fromtimestamp(inicio).isoformat(timespec="seconds"),
-            latido=ahora(), latido_epoch=time.time(), modo=etiqueta, allow_calc=ALLOW_CALC, reconexiones=reconexiones,
+            latido=ahora(), latido_epoch=time.time(), modo=etiqueta, allow_calc=calc, reconexiones=reconexiones,
             proyecto=prj, caso=caso, procesados=n, python=sys.version.split()[0],
             se_detiene_en_min=round(IDLE_MINUTES - (time.time() - ultimo) / 60, 1), en_curso=dict(EN_CURSO) or None, **extra))
 
@@ -1237,6 +1545,11 @@ def main(modo):
                               nombrar=POLITICA.nombrar, renombrar_claude=POLITICA.renombrar_claude, activar_variation=POLITICA.activar_variation,
                               copiar_escenario=POLITICA.copiar_escenario, carpeta_escenarios=POLITICA.carpeta_escenarios, renombrar_escenario=POLITICA.renombrar_escenario,
                               VARIATION=variation)
+                elif isinstance(POLITICA, PoliticaDiagnosticoRef):
+                    ns.update(diario=POLITICA.resumen, REF=PRJ_REF, LAB=PRJ_LAB, CASO_REF=CASO_REF,
+                              CASO_SONDA=CASO_SONDA, ESC_REF=ESC_REF, SONDA="Base SEN_SONDA_20261109")
+                    # Sustituto restringido: misma allowlist/guarda de activación, sin casos arbitrarios.
+                    ns["cambiar_caso"] = POLITICA.cambiar_caso_diagnostico
                 buf = io.StringIO()
                 capturar_ow = not fuente.startswith("# pf_bridge: salida_manual")
                 marca_ow = SALIDA.marca() if capturar_ow else None

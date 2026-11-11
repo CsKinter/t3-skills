@@ -23,6 +23,9 @@ Archivos:
   No abrirlos salvo que se pida: son específicos de ese informe.
 - `references/tecnica-xml.md` — receta de edición, estilos del documento EE, XML de figuras/tablas/leyendas y trampas.
 - `references/figuras.md` — figuras: flujo SVG, trampas del SVG en Word, estilo (flechas, etiquetas, zonas, esquemas).
+- `references/revisiones.md` — revisiones numeradas, verificación antes de aprobar y oficialización.
+- Estructura y contenido de un informe de restricciones (esqueleto, plantilla por escenario, origen de cifras, lista de
+  chequeo): skill `estudio-restricciones`, `references/informe.md`.
 
 ## Antes de tocar el informe
 
@@ -30,9 +33,11 @@ Archivos:
   o figuras. Si hay una versión suya más nueva, releerla y comparar (`diff_doc.py`, `diff_s1.py`) antes de editar.
 - Si existe `~$<nombre>.docx` en la carpeta, Word lo tiene abierto: trabajar en una copia y pedir que lo cierre (o
   combinar después sobre SU versión).
-- Respaldo en el scratchpad antes de cada cambio (`informe_respaldo_antes_<qué>.docx`). **Un solo archivo oficial**,
-  con su nombre, sin sufijos de versión («pisa el informe no más, no es necesario hacer 20 versiones»).
-- **Nunca escribir en OneDrive** (sólo leer). El informe vive en Documentos del proyecto.
+- Respaldo antes de cada cambio (`informe_respaldo_antes_<qué>.docx`). **Un solo archivo oficial**, con su nombre y
+  sin sufijos de versión. Las copias de trabajo sí se numeran por revisión, cada una con su LEEME:
+  `references/revisiones.md`.
+- **El oficial no se edita.** Si vive en OneDrive, sólo se reemplaza con aprobación explícita del usuario, respaldo
+  previo y dentro de la carpeta que autorice el AGENTS.md del proyecto. Sin esa regla escrita, OneDrive es sólo lectura.
 - **Cambios de estructura** (capítulos, secciones, orden): mostrar primero el esqueleto en el chat y esperar el visto
   bueno.
 
@@ -40,7 +45,8 @@ Archivos:
 
 La prosa sigue la skill `redaccion` (núcleo + `references/informe-cliente.md`). Leerla antes de escribir o corregir
 texto del informe. Aquí sólo queda lo propio del Word: las leyendas describen el estado, no la iteración, y cada
-escenario usa la misma estructura de títulos (p. ej. «Condición sin restricción», «Restricción» y «Resultado» en Heading4).
+escenario usa la misma estructura de títulos (p. ej. «Condición sin restricción», «Contingencia crítica» y
+«Restricción aplicada» en Heading4).
 
 ## Tablas
 

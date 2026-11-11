@@ -7,7 +7,8 @@
 
 Dentro del comando existen: app (vista solo lectura del app de PF), resultado (dict que se devuelve como JSON),
 guardar(nombre, datos) -> archivo en pf_bridge\\files, as_list, get_attr, SoloLectura, MODO, exportar_grafico(nombre).
-En modo modificación (lo lanza el usuario con pf_bridge_modificar.py) además: revisar(obj), diario(), deshacer(n=None),
+En modo modificación (se arranca con pf_bridge_modificar.py; el agente puede hacerlo con autorización para ese modo y
+alcance) además: revisar(obj), diario(), deshacer(n=None),
 VARIATION. En ambos modos: salida(tipo=None, n=50, buscar=None) lee la Output Window de PF.
 Cada resultado trae output_window (líneas nuevas, errores y avisos del comando); el cliente imprime errores y
 avisos, y todo con --ow. Ver references/bridge.md.

@@ -61,4 +61,5 @@ Formato Word, tablas y figuras: `informe-ee`.
 
 ## Búsqueda final
 
-Busca en todo el documento «iteración», «no converge», «S1», «_revisar», «[», «;» y «·», y corrígelos.
+Busca en todo el documento «iteración», «no converge», «S1», «_revisar», «[», «;» y «·», y corrígelos. Busca también
+«slack», «balance» y nombres de revisores o de otros estudios: son asuntos internos.
