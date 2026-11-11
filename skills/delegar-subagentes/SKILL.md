@@ -60,6 +60,23 @@ Cost vs intelligence per task (Artificial Analysis, Intelligence Index v5.0.1; u
 | GPT-6 Luna max | 0.15 | 28 | |
 | Gemini 3.8 Flash high | 7.77 | 31 | |
 
+Subscription economics (Theo, https://x.com/theo/status/2119960608816988596, 2026-11-10; 1.1M proxied requests Aug 11–Nov 9 2026,
+Claude Ultra $200/month, valued at API list prices). Fable has its own cap = **half of each weekly limit**, and it shares the weekly
+limit with Opus:
+
+| Month of… | Worth at API prices | vs $200 |
+|---|---:|---:|
+| Opus 5.5 only | $14,662 | 73× |
+| Fable 5.2 first, then Opus 5.5 | $3,021 + $7,331 = $10,353 | 52× (−29 %) |
+| Fable 5.1 first, then Opus 5.5 | $2,197 + $7,331 = $9,528 | 48× (−35 %) |
+| Fable 5.2 only | $3,021 | 15× |
+| Fable 5.1 only | $2,197 | 11× |
+
+A month is 4.3 weekly limits; one week of only Opus ≈ $3,421. Maxing out Fable costs ~$7.3k of Opus capacity for ~$3k of Fable
+(≈ 2.4 $ of Opus per 1 $ of Fable), and it burns faster per $ than Opus. Our evidence agrees: Fable high used up the 5 h window in
+~20 min of heavy work (S3). **Rule:** Fable for short, high-leverage design/review turns (e.g. S5d init design); implementation
+loops on Opus 5.5 / Sonnet / DeepSeek.
+
 Use: the index is generic; our scorecard outranks it for this codebase. Escalation for hard reasoning: Fable 5.2 high (subscription) > GPT-6.1 Sol max (cheap) > Opus 5.5 xhigh.
 
 ## 2. Scorecard (evidence, newest first)
