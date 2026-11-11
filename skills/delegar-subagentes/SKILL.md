@@ -36,10 +36,37 @@ $1–1.4 at most (its month total also covers work before the scorecard), becaus
 that doesn't reach PF. 2nd trial (SVC usetp, 11-06): merged — refuted its own prior diagnosis, fix by the TechRef, ~50 min, clean log.
 Use Qwen for diagnosis and small, well-specified implementations (now 10 useful / 11 trials; the salto-t0 one useful for its map, wrong on cause — the 5th a well-argued no-fix finding; the DdA meter fix was a real open-ended diagnosis too); DeepSeek for open-ended fixes.
 
+Cost vs intelligence per task (Artificial Analysis, Intelligence Index v5.0.1; user's screenshot 2026-11-10; $ = cost to run the index):
+
+| Model (effort) | $/run | Index | Note |
+|---|---|---|---|
+| Claude Fable 5.2 max | 26.54 | 65 | marginal over high |
+| Claude Fable 5.2 xhigh | 14.83 | 62 | same as high, +63 % cost: skip |
+| Claude Fable 5.2 high | 9.08 | 62 | best intelligence without overpaying; via `claudeAgent` it is the subscription (shares 5 h/weekly with the Opus parent) |
+| Claude Fable 5.1 max | 12.99 | 49 | |
+| Claude Opus 5.5 max / xhigh / high | 10.04 / 6.05 / 3.46 | 59 / 57 / 52 | |
+| Claude Sonnet 5.5 max | 10.02 | 55 | |
+| Claude Fable 5.2 medium | 3.80 | 56 | cheapest Fable worth it |
+| Gemini 4 Carbon high | 7.76 | 60 | not configured here |
+| GPT-6 Astra max | 6.24 | 57 | Codex quota ran out on 11-10 |
+| GPT-6.1 Sol max | 1.27 | 55 | best value by far; check whether it shares the Codex quota |
+| GPT-6.1 Terra max | 0.96 | 51 | |
+| GLM-5.3 max | 5.01 | 32 | |
+| Kimi K3.1 Pro | 3.68 | 46 | |
+| Qwen3.8 Max | 10.02 | 34 | |
+| Muse Wonder / Ember max | 6.95 / 0.14 | 44 / 36 | |
+| Claude Haiku 5.5 max | 0.41 | 36 | |
+| DeepSeek V4.1 Flash max | 0.60 | 33 | our workhorse; scorecard beats its index on this codebase |
+| GPT-6 Luna max | 0.15 | 28 | |
+| Gemini 3.8 Flash high | 7.77 | 31 | |
+
+Use: the index is generic; our scorecard outranks it for this codebase. Escalation for hard reasoning: Fable 5.2 high (subscription) > GPT-6.1 Sol max (cheap) > Opus 5.5 xhigh.
+
 ## 2. Scorecard (evidence, newest first)
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-10 | GPT-6 Astra high (Codex) | S3: build + init of the 25F as fast as PF (~10 s), bit-identical | FAILED at start: Codex usage limit until 11-11 00:42, nothing saved; relaunched with Claude Fable 5.2 high (subscription) | 0 | n/a |
 | 11-10 | DeepSeek V4.1 Flash max | S2: why the 19 REPC_C of the 25F take 448 s of init (least squares) | DONE: root cause = the inc() system plus an assignment row that contradicts it (inc0(ncapaX)=−999999 vs assignment 0 → 416×270 inconsistent, residual ~5e5), so LS spent 2×2000 nfev + dogbox on a point later rejected; fix drops that deduction row only when it contradicts the exact inc() point and the inc() point closes without it. Init 529 → 59 s, REPC_C 25–31 s → ~1 s, states bit-identical, 2608 bit-identical. Uses a >1e3 contradiction threshold (watch it) | ~2 h | Clean |
 | 11-10 | DeepSeek V4.1 Flash max | Q6: ElmAsm AS model in the 25F flow + explain the remaining 100–200 ppm | PARTIAL, excellent: single-cage circuit with slip iteration (Lebu Q −0.342951 vs PF −0.342950), DFIG keep qgini; ElmAsm as injection in RMS; extractor extended; injected PF's P/Q into the VS network as a positive test → residual is network parameters in Norte Grande radials, not dispatch (taps p90 2.3 ppm, shunts ≤0.018 Mvar). Δu median 30.5 → 6.0 ppm, p99 1195 → 165, max 34 254 → 457; p90 61.8 (goal 50). 2608 bit-identical, in 54 real minutes | 54 min | Clean; used the injection test from the brief |
 | 11-10 | GPT-6 Astra high (Codex) | S1: profile why VS is slow on the 25F and implement bit-identical wins | BLOCKED on the base (2 G8X inits fail, so no valid step to measure), but the profile is the value: SVD/least-squares = ~80 % of the 529 s init; per-model breakdown (in profile_summary.json) shows 19 REPC_C plant controllers = 448 s (3 attempts × ~4000 nfev each). Honest: refused to sell a colouring microbenchmark as a SEN win, didn't infer step cost from init, didn't re-propose rejected ideas. Plan prioritised with identity risk. 2608 bit-identical, no engine change | ~3 h | Clean, rigorous; first Astra trial — good for analysis |
@@ -169,6 +196,8 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+
+- 2026-11-10: Codex quota can run out mid-session with no warning (Astra died at launch). Before a long Codex child, consider the remaining quota; if it fails at once, check for a branch/folder before relaunching, and do not switch model unasked.
 
 - 11-10: Fresh worktrees lack untracked test data (proofs/, salida_* captures): when merging, symlink missing files one by one from the live worktree (ln -s into an existing dir nests the link — link files, not dirs). Children report '27 skipped' for the same reason.
 - 11-10: Running a flow child and a dynamics child in parallel saves time, but the dynamics child's failure may be inherited from the stale flow; re-run on the integration before diagnosing.
