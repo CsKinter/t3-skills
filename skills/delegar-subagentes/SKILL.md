@@ -204,6 +204,8 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 
 ## 6. Lessons (dated; add new ones on top)
 
+- 2026-11-11 (Theo, x.com/theo/status/2119960608816988596, 1.1M proxied requests): on Claude Ultra ($200/mo) a month of only Opus 5.5 ≈ $14,662 at API prices; Fable 5.2 only ≈ $3,021 (Fable capped at 50 % of each weekly limit, shared with Opus: Fable first leaves $7,331 of Opus). So 1 $ of Fable costs ~2.4 $ of Opus capacity. Use Fable for short, high-leverage design/review turns; implementation loops on Opus/Sonnet/DeepSeek.
+
 - 2026-11-11: Before sending a child's "read-only" PF script to the bridge, grep it for `Execute`: running the case's own ComInc deletes events with `p_from`. Run a temporary copy pointed at an empty IntEvt, deleted in finally. And a "why is X slow" diagnosis brief should ask for time by verdict (accepted/rejected), not just by phase: that split was the key finding.
 
 - 2026-11-11: PF scripts I write for the bridge: check every object they assume exists (temp commands get deleted by cleanup scripts), create/delete temp objects inside try/finally, and never set ElmRes attributes P2 did not set (`calTp`): a mis-typed ElmRes makes PF silently write into the case's own Result_All. Tell mechanical children "do not end your turn until the result is in".
