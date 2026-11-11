@@ -66,6 +66,7 @@ Use: the index is generic; our scorecard outranks it for this codebase. Escalati
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-10 | Claude Fable 5.2 high (claudeAgent) | S3 relaunch (same brief) | FAILED after ~20 min: "Claude API rate limit reached" (subscription window). Left real progress: harness (correr.py, puertas.sh, cmp_punto.py), base profile, 1 commit 7785694 (S0 dependency memo) on `t3/s3-init-rapida-1` | ~20 min | Clean bitácora; noticed the stale branch from the Astra attempt and used a -1 branch |
 | 11-10 | GPT-6 Astra high (Codex) | S3: build + init of the 25F as fast as PF (~10 s), bit-identical | FAILED at start: Codex usage limit until 11-11 00:42, nothing saved; relaunched with Claude Fable 5.2 high (subscription) | 0 | n/a |
 | 11-10 | DeepSeek V4.1 Flash max | S2: why the 19 REPC_C of the 25F take 448 s of init (least squares) | DONE: root cause = the inc() system plus an assignment row that contradicts it (inc0(ncapaX)=−999999 vs assignment 0 → 416×270 inconsistent, residual ~5e5), so LS spent 2×2000 nfev + dogbox on a point later rejected; fix drops that deduction row only when it contradicts the exact inc() point and the inc() point closes without it. Init 529 → 59 s, REPC_C 25–31 s → ~1 s, states bit-identical, 2608 bit-identical. Uses a >1e3 contradiction threshold (watch it) | ~2 h | Clean |
 | 11-10 | DeepSeek V4.1 Flash max | Q6: ElmAsm AS model in the 25F flow + explain the remaining 100–200 ppm | PARTIAL, excellent: single-cage circuit with slip iteration (Lebu Q −0.342951 vs PF −0.342950), DFIG keep qgini; ElmAsm as injection in RMS; extractor extended; injected PF's P/Q into the VS network as a positive test → residual is network parameters in Norte Grande radials, not dispatch (taps p90 2.3 ppm, shunts ≤0.018 Mvar). Δu median 30.5 → 6.0 ppm, p99 1195 → 165, max 34 254 → 457; p90 61.8 (goal 50). 2608 bit-identical, in 54 real minutes | 54 min | Clean; used the injection test from the brief |
@@ -196,6 +197,8 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+
+- 2026-11-10: Fable 5.2 high on the Claude subscription burned the window in ~20 min of a heavy task. For multi-hour children, the subscription is not a free lunch; prefer it for short, hard pieces, or resume from the branch it leaves.
 
 - 2026-11-10: Codex quota can run out mid-session with no warning (Astra died at launch). Before a long Codex child, consider the remaining quota; if it fails at once, check for a branch/folder before relaunching, and do not switch model unasked.
 
