@@ -66,6 +66,7 @@ Use: the index is generic; our scorecard outranks it for this codebase. Escalati
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-11 | DeepSeek V4.1 Flash max | S3 continuation (from Fable's 2 commits + its ideas file, steered mid-run) | PARTIAL, honest: 2 commits (one project copy via pickle, Medidor vectorised, exact LS cut when err==0; cached bus-section graph); all gates (2608 Z sha, 25F point array_equal, pytest both modes). 25F cold total 82→77 s, warm 61→49–55 s; cold init flat ~47 s. Found `VIQSILENT_CACHE_INIT=1` BREAKS the 25F (3113/287, different point) → left off; measured completar_init in 2608 at 240–291 s (2 workers by 1400 MB guard). Merged ff into integ-25f (f76af97) | ~1 h 45 | Clean; used the predecessor's harness and ideas without redoing them |
 | 11-11 | DeepSeek V4.1 Flash high (i7) | P5: run my SHA-checked PF script (ElmAsm reference + 5 timed ComInc) | BLOCKED correctly at step 1: bridge stopped for inactivity (3 h 20 min) and PF window showed "Licence Error!"; touched nothing, did not try to start PF from PowerShell as briefed | minutes | Clean; checked the window title on its own |
 | 11-10 | Claude Fable 5.2 high (claudeAgent) | S3 relaunch (same brief) | PAUSED after ~20 min: "Claude API rate limit reached" (subscription window); the child resumed on its own when the 5 h window reset (T3 reported it as failed, it was not). In ~30 min of work: harness (correr.py, puertas.sh, cmp_punto.py), base profile, 2 commits on `t3/s3-init-rapida-1`: 7785694 (S0 dependency memo, init 72.6 → 40 s) and 72f4b6e (on-disk code-object cache; cold build+init ~35+46 s, warm ~27+33 s), point array_equal. Cancelled by the user for quota burn; continued by DeepSeek max on t3/s3-init-rapida-2 | ~20 min | Clean bitácora; noticed the stale branch from the Astra attempt and used a -1 branch |
 | 11-10 | GPT-6 Astra high (Codex) | S3: build + init of the 25F as fast as PF (~10 s), bit-identical | FAILED at start: Codex usage limit until 11-11 00:42, nothing saved; relaunched with Claude Fable 5.2 high (subscription) | 0 | n/a |
@@ -198,6 +199,8 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+
+- 2026-11-11: hand-off between models works: Fable left a harness + bitácora + an ideas file (I extracted from its reasoning), and DeepSeek continued in a new branch from its HEAD without redoing anything. When cancelling a strong-but-expensive child, mine its activity for ideas and pass them on. Also: a Codex child that hit the quota resumes by itself when the quota resets — cancel it if the work was handed to someone else.
 
 - 2026-11-10: Fable 5.2 high on the Claude subscription burned the window in ~20 min of a heavy task. For multi-hour children, the subscription is not a free lunch; a rate-limited Claude child resumes by itself when the window resets, so do not relaunch or switch model; just wait for its notification.
 
