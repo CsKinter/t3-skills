@@ -240,6 +240,7 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 
 ## 6. Lessons (dated; add new ones on top)
 
+- 11-12 (user rule) Big picture before the next blocker: after every child/merge, compare the old architecture (flag off) and the PF-copied one (flag on) against PF per family (`estudios/cen_25f/big_picture/comparar_arquitecturas.py`, same commit and h). Four children in a row (C11–C14) fixed convergence blockers; the first such table showed the PF-copied path wins 10–60x at t0 but is ~3x worse on machines/frequency by 0.1 s. Put the table in every brief's acceptance and pick the next child by the largest family gap.
 - 2026-11-11: Claude children (Opus too) end their turn while their own background jobs run, and the platform reports "completed". Put "do not end your turn with background processes; wait in the foreground" in every brief, and check the branch/log before trusting a "completed".
 
 - 2026-11-11 (Theo, x.com/theo/status/2119960608816988596, 1.1M proxied requests): on Claude Ultra ($200/mo) a month of only Opus 5.5 ≈ $14,662 at API prices; Fable 5.2 only ≈ $3,021 (Fable capped at 50 % of each weekly limit, shared with Opus: Fable first leaves $7,331 of Opus). So 1 $ of Fable costs ~2.4 $ of Opus capacity. Use Fable for short, high-leverage design/review turns; implementation loops on Opus/Sonnet/DeepSeek.
