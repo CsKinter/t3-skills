@@ -93,6 +93,9 @@ por sector; no apagar térmicas (inercia); PMGD como están; en la ZDI ajustes m
 Charrúa se puede mover reactivo; escalar reactivo antes de cortar P (BESS en P-cosφ 0,95 todos igual, luego BC de la
 zona, luego Q de eólicos); cada escenario resuelve sus propios problemas.
 
+Variante automática por zona (Sidon, 11-11-2026): ERNC a control V, taps y bancos barra por barra, S/E vecinas y
+validación desde plano, en `soporte-local-tension.md`.
+
 ## 2. N-1 y contingencias
 
 1. **Contingencias en JSON**, fuera del script: `{"id", "desc", "elementos": [[clase, loc_name, filtro_ruta?]]}`; una
