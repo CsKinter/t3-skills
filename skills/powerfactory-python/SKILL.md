@@ -150,7 +150,9 @@ verificados `scripts/pf_bridge_modificar.py` y `scripts/pf_bridge_limpieza.py`, 
 esa ruta para eludir restricciones de las herramientas.
 Capturas de escritorio (`scripts/captura_escritorio.ps1`) sólo si el usuario lo pidió o lo acordó en la sesión.
 Las tareas repetidas por escenario usan plantillas `__X__` y `scripts/pf_drv.py`. Si un comando no devuelve nada,
-mirar `estado` antes de reintentar; la versión verificada tiene 120 min de inactividad y 8 h de sesión.
+mirar `estado` antes de reintentar; la versión verificada tiene 120 min de inactividad y 8 h de sesión (puente full:
+60 min y 4 h). El tope de sesión (`expira_en_min`) no se reinicia con actividad; sólo la inactividad
+(`se_detiene_en_min`) lo hace. Detalle en `references/bridge-full.md`.
 Detalle y límites: `references/bridge.md`.
 
 ## Recetas de estudio (verificadas con el puente)

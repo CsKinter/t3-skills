@@ -49,6 +49,13 @@ Sidon a una base de Cumbres u otro proyecto: comparar identidad antes de actuar 
 - `inbox/`, `en_curso/`, `ejecutados/`, `fallos/`, `duplicados/` y `descartados/` registran el ciclo. `auditoria.jsonl`
   registra fuente/hash y respuesta; no es una función de deshacer del modelo.
 - Mantener un solo escritor en PF. Tiempo de inactividad: 60 min; duración máxima: 4 h en la versión incorporada.
+- **`estado` muestra dos relojes distintos (confusión común, 11-11-2026).** `se_detiene_en_min` es la inactividad: se
+  reinicia con cada comando procesado (`estado` no cuenta). `expira_en_min` es el tope de horas desde `inicio`
+  (`max_hours`): **no se reinicia con actividad**; al llegar a 0 el puente termina con motivo «tope de horas» aunque se
+  esté usando. Ambos se revisan **entre** comandos (`motivo_fin` antes de tomar el siguiente): un comando en curso no se
+  corta, pero el siguiente ya no se procesa. Mientras un comando corre, `status.json` no se refresca (los minutos
+  quedan congelados). Antes de un comando largo, comparar su duración con ambos relojes; si `expira_en_min` no alcanza,
+  relanzar el puente antes (sesión nueva) en vez de esperar a que lo corte.
 - El cliente devuelve códigos 0 (éxito), 1 (error del comando), 2 (no disponible/timeout) y 3 (uso inválido).
 
 Un timeout del cliente **no cancela** la llamada de PF. Consultar estado y respuesta por el mismo ID antes de reintentar;
