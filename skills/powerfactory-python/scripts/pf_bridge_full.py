@@ -15,7 +15,7 @@ Qué hace una vez arrancado:
     PowerFactory (el mismo hilo de la API de PF), con el objeto `app` CRUDO;
   - deja la respuesta en `outbox/<id>.py` -> `outbox/<id>.json`;
   - archiva el comando en `ejecutados/<id>.py` y anota en `auditoria.jsonl`;
-  - se detiene con `inbox/STOP`, por inactividad o por tope de horas.
+  - se detiene con `inbox/STOP` o por inactividad; el tope de horas es opcional (sin tope por defecto).
 
 Qué NO hace:
   - no aplica listas de permitidos de objetos, métodos, atributos ni de código;
@@ -33,6 +33,7 @@ La auditoría es posterior, no un sandbox. Ver references/bridge-full.md.
 """
 import contextlib
 import dataclasses
+import typing
 import datetime
 import gc
 import hashlib
@@ -62,7 +63,10 @@ BRIDGE_DIR = os.environ.get("PF_BRIDGE_FULL_DIR") or os.path.join(
     os.path.expanduser("~"), "pf_bridge_full"
 )
 IDLE_MINUTES = 60.0      # menos que el puente de lectura: aquí el riesgo es mayor
-MAX_HOURS = 4.0
+# Sin tope de horas por defecto (Vicente, 11-11-2026): el puente full sólo se detiene por STOP o inactividad.
+# Tope opcional: PF_BRIDGE_FULL_MAX_HOURS=<horas> o Config(max_hours=...).
+_mh = os.environ.get("PF_BRIDGE_FULL_MAX_HOURS", "").strip()
+MAX_HOURS = float(_mh) if _mh else None
 POLL_S = 0.5
 MAX_SALIDA = 200_000
 MAX_RESULTADO = 1_000_000
@@ -77,7 +81,7 @@ class Config:
     bridge_dir: str = BRIDGE_DIR
     confirmado: bool = CONFIRMO_ACCESO_TOTAL
     idle_min: float = IDLE_MINUTES
-    max_hours: float = MAX_HOURS
+    max_hours: typing.Optional[float] = MAX_HOURS
     poll_s: float = POLL_S
     max_salida: int = MAX_SALIDA
     max_resultado: int = MAX_RESULTADO
@@ -423,7 +427,8 @@ class PuenteCompleto:
             "idle_min": self.cfg.idle_min,
             "max_hours": self.cfg.max_hours,
             "se_detiene_en_min": round(self.cfg.idle_min - (ahora - self.ultimo) / 60.0, 1),
-            "expira_en_min": round(self.cfg.max_hours * 60.0 - (ahora - self.inicio) / 60.0, 1),
+            "expira_en_min": (round(self.cfg.max_hours * 60.0 - (ahora - self.inicio) / 60.0, 1)
+                              if self.cfg.max_hours else None),
             "directorio": self.dir,
             "motivo": motivo if motivo is not None else self.motivo,
             "nota": "La auditoria es posterior, no un sandbox. Los comandos pueden cambiar el proyecto.",
@@ -443,7 +448,7 @@ class PuenteCompleto:
             return "STOP"
         if ahora - self.ultimo > self.cfg.idle_min * 60.0:
             return "inactividad"
-        if ahora - self.inicio > self.cfg.max_hours * 3600.0:
+        if self.cfg.max_hours and ahora - self.inicio > self.cfg.max_hours * 3600.0:
             return "tope de horas"
         return None
 
