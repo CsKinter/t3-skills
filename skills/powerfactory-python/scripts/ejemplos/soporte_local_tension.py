@@ -117,7 +117,10 @@ if RESET:
         else: RS.append([n, "sh", [x.outserv, ga(x, "ncapa")], v]); x.outserv = v[0]; x.SetAttribute("ncapa", v[1])
 R["reset"] = RS
 # --- solucion de partida (buena): i_power = 0 plano, luego continuacion con el original
-ok0 = lf(plano=True, ip=0); ok1 = ok0 and lf()
+PART = [("ip0_plano+cont", lambda: lf(plano=True, ip=0) and lf()), ("orig_plano", lambda: lf(plano=True)), ("orig_caliente", lambda: lf())]
+ok1 = False
+for _n, _f in PART:
+    if _f(): ok1 = True; R["partida"] = _n; break
 R["m0"] = met() if ok1 else None
 if not ok1: e.DiscardChanges(); raise RuntimeError("partida no converge")
 def es_ren(x):
