@@ -122,7 +122,9 @@ ok1 = False
 for _n, _f in PART:
     if _f(): ok1 = True; R["partida"] = _n; break
 R["m0"] = met() if ok1 else None
-if not ok1: e.DiscardChanges(); raise RuntimeError("partida no converge")
+if not ok1:
+    for k, v in keep.items(): ldf.SetAttribute(k, v)  # 12-11: sin esto el ComLdf del caso queda con i_power=0
+    e.DiscardChanges(); raise RuntimeError("partida no converge")
 def es_ren(x):
     c = ga(x, "cCategory", "") or ""; n = x.loc_name.upper()
     if any(s in n for s in EXCL) or n.startswith("BESS") or "STATCOM" in n or "VSC" in n: return False

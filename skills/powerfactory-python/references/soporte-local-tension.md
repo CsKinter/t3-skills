@@ -86,7 +86,8 @@ posible error de dato, no se «arregla» con taps.
 | `CreateVersion` con nombre repetido en una segunda pasada | Conflicto de versiones | Nombre con escenario, pasos y `%Y%m%d_%H%M` |
 | Cambiar la estructura de una clave de dict | `ValueError: too many values to unpack` antes de escribir | Desempaquetar la clave nueva en todos los bucles |
 | Excepción a mitad de corrida | El escenario activo queda modificado y el siguiente `Activate` puede guardarlo | Envolver: `exec(SRC, globals())`, y en `except`, `DiscardChanges()` si `iModified` |
-| `i_power = 0` desde plano se estanca en un escenario (E06 madrugada, error máximo constante tras 14 iteraciones) | «partida no converge» sin escribir nada | Respaldo en orden: `i_power = 0` plano + continuación, original plano y original en caliente. Se registra en `R["partida"]`; la validación C sigue exigiendo el original desde plano |
+| `i_power = 0` desde plano se estanca en un escenario (E06 madrugada) y el original (`i_power = 1`) sí converge | No hay una partida que sirva para todos: E02 necesita `i_power = 0` para no caer en la solución espuria y E06 converge sólo con el original | Partida con respaldos en orden: `i_power = 0` plano + continuación, original plano y original en caliente. Se registra en `R["partida"]`; la validación C sigue exigiendo el original desde plano. Si todas fallan, revisar primero que el ComLdf sea el original (trampa siguiente) |
+| Excepción antes de restaurar el ComLdf (E06, 12-11-2026) | El ComLdf es del caso de estudio y no se descarta con el escenario: quedó `i_power = 0` y `iopt_noinit = 1`. El reintento tomó eso como «original», nunca probó el original real y la siguiente corrida habría validado con otro ComLdf | Restaurar las opciones en `finally` de la envoltura y antes de cada `raise`. Antes de cada corrida, comparar el ComLdf con el último registrado (`R["ldf"]`) |
 | Costo | Un flujo por paso probado: E01 completo agotó 3000 s | Presupuesto `PRESUP` y pasos con `__PASOS__` para repetir sólo B2 |
 | Lote largo desde el agente | La tarea en segundo plano de la shell muere a las 2 h y deja el envío a medias | Lotes de ≤ 2 escenarios por tarea. Para diferir, mover los runners a una subcarpeta en vez de matar la tarea |
 | Q1/Q3 de un escenario PV | Es el cuantil de P (P = q·sgn·cosn), no un Q | El paso A no lo altera; no excluir PV por eso |
@@ -95,10 +96,14 @@ posible error de dato, no se «arregla» con taps.
 
 ```python
 SRC = r"""...plantilla instanciada..."""   # o repr() del texto
+_L = app.GetFromStudyCase("ComLdf")
+_K = {a: _L.GetAttribute(a) for a in ("i_power", "iopt_noinit", "iopt_lim", "iopt_plim", "ictrlx", "iopt_at", "iopt_asht")}
 try:
     exec(SRC, globals())
 except Exception:
     _a = app.GetActiveScenario()
     if _a is not None and _a.GetAttribute("iModified"): _a.DiscardChanges()
     raise
+finally:
+    for _k, _v in _K.items(): _L.SetAttribute(_k, _v)   # el ComLdf es del caso, no del escenario
 ```
