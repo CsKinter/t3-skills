@@ -96,3 +96,18 @@ entregar. Complementa `estudio-restricciones.md`, que cubre el cálculo. PF 2025
 10. Actualizar AGENTS.md del proyecto con los nombres finales. No repetir scripts de promoción sobre la entrega.
 
 Todo cambio de esta lista se propone al usuario antes de aplicarlo.
+
+## Fusionar variations y limpiar escenarios (Sidon, 12-11-2026)
+
+- Estructura pedida por Vicente: en la carpeta de trabajo, tres variations (proyecto, AA base, AA sensibilidad); en
+  escenarios, sólo `1_Irrestrictos`, `2_Restringidos` y `99_Respaldo`. Las variations del CEN (generación, transmisión,
+  otros) no se tocan.
+- Fusión verificada: versión del proyecto → `Deactivate()` de origen y destino en el caso activo → `destino.Move(stage)`
+  (rc 0; comprobar `stage.GetParent() == destino`) → `destino.Activate()` → renombrar → `Delete()` de las variations
+  vacías. Antes, revisar que no haya dos stages con el mismo `tAcTime` en el destino. El otro caso que usa la variation
+  destino la mantiene activa.
+- Prueba: flujo de todos los escenarios de ambos casos con el ComLdf por defecto antes y después: misma slack, ΔU = 0 en
+  todas las barras ≥ 60 kV y mismo número de elementos. Los solapes por nombre entre stages (`Cub_1`, `Switch`) eran
+  objetos distintos.
+- Para mover una carpeta que contiene el escenario activo, desactivarlo antes (`Deactivate()`).
+- `Delete()` manda a la papelera de PF; la versión previa del proyecto es el respaldo real.
