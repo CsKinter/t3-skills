@@ -7,6 +7,22 @@ entregar. Complementa `estudio-restricciones.md`, que cubre el cálculo. PF 2025
 
 ## 1. Estructura recomendada
 
+**Preferencias de Vicente (12-11-2026, mandan sobre el caso Cumbres de abajo)**
+- **Un solo ComLdf para todo.** Todos los escenarios corren con el ComLdf por defecto del caso (`i_power=1`, arranque
+  plano, `iopt_noinit=0`). Cambiar a ecuaciones de corriente (`i_power=0`) u otra opción sirve sólo para diagnosticar;
+  si un escenario no converge con el defecto, se corrige el escenario (soporte local de tensión, despacho), no el
+  ComLdf. Restituir siempre el defecto al terminar.
+- **Tres variations de trabajo, nada más**: `Proyecto <nombre> (<código>)`, `Proyectos AA - Base (<horizonte>)` (toda
+  la cartera de acceso abierto base en una sola, sus stages fusionados) y `Proyectos AA - Sensibilidad/expansión
+  (<horizonte>)`. Las variations del CEN (generación, transmisión, otros) no se tocan.
+- **Escenarios: sólo `1_Irrestrictos`, `2_Restringidos` y `99_Respaldo`.** En respaldo, sólo lo que pueda servir
+  después (fondo sin proyecto, demanda escalada, origen de la BD), con nombres descriptivos.
+- **Lo que no se usa se borra.** Antes, una versión del proyecto (`CreateVersion`), que es el respaldo real. No
+  acumular copias de carpetas como respaldo. Variations o escenarios que aún pueden servir (p. ej., cartera por
+  acordar) van a `99_Respaldo`; el resto, a la papelera.
+- Preferir lo simple: pocas carpetas, nombres claros, el estado legible sin abrir scripts. Verificar el orden con
+  flujos antes y después (diferencia cero) y registrar en el AGENTS.md del proyecto.
+
 **Study Cases** (`Study Cases\00_<Proyecto>\<POI>\`)
 - Un caso por condición térmica que de verdad se use, numerados por orden de uso: `01_25 CS` (con sol) y `02_15 SS`
   (sin sol). Un caso que no se usa se elimina al cierre y se renumera. Scripts y JSON anteriores a una renumeración
@@ -19,8 +35,8 @@ entregar. Complementa `estudio-restricciones.md`, que cubre el cálculo. PF 2025
 - Carpeta `_secure` con los originales del cliente: intocable.
 - `1_Irrestrictos` (punto de partida) y `2_Restringidos` (resultado, 1:1 con el informe). **Sólo los finales**, con el
   mismo nombre en ambas carpetas (`E0x_<BLOQUE>_<DEMANDA>_<temp>_BESS-<estado>`).
-- `99_Respaldo` con subcarpetas fechadas: `Previos <hito> <fecha>` (lo que había antes de una sustitución),
-  `<Sensibilidad> <fecha>`, copias de verificación. Nunca dentro de las dos carpetas oficiales.
+- `99_Respaldo` sólo con lo que pueda servir después (ver preferencias arriba); las copias de verificación se
+  borran tras una versión del proyecto. Nunca dentro de las dos carpetas oficiales.
 - Una sensibilidad que forma parte del informe tiene su carpeta `3_Sensibilidad_<…>`. Nace en respaldo y se promueve.
 - `loc_name` admite 40 caracteres: nombres de carpeta cortos.
 - El estado debe poder revisarse sin leer scripts.
