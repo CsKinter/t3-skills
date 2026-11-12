@@ -21,8 +21,10 @@ recursos: lo que queda fuera es dato, carga o falta de compensación real, y se 
 
 ## Pasos
 
-0. **Partida buena.** Correr primero con `i_power = 0` desde plano y luego con el ComLdf original en continuación. Si no
-   converge, descartar los cambios y detenerse. Medir la slack y una barra de control conocida de la solución buena
+0. **Partida buena.** Correr con el ComLdf **por defecto del caso** desde plano (y en caliente si falla). Si no
+   converge, descartar los cambios y detenerse. **Nunca** dejar un escenario que sólo converja con otro `i_power` u otra
+   opción del ComLdf: todos los escenarios deben correr con el mismo ComLdf (Vicente, 12-11-2026). Cambiar `i_power`
+   sirve sólo para diagnosticar; la solución es de tensión/despacho (soporte local). Medir la slack y una barra de control conocida de la solución buena
    (`MONITOR`). La solución espuria tiene la misma topología, otra Q y otra slack.
 1. **A: ERNC de la zona a control de tensión.** Pasan a `av_mode = "constv"` con `usetp = 1,0` en su propio terminal. El
    proyecto, los BESS, los STATCOM y los VSC quedan excluidos, igual que las unidades con P ≈ 0 (PV de noche). Se guarda
@@ -86,7 +88,7 @@ posible error de dato, no se «arregla» con taps.
 | `CreateVersion` con nombre repetido en una segunda pasada | Conflicto de versiones | Nombre con escenario, pasos y `%Y%m%d_%H%M` |
 | Cambiar la estructura de una clave de dict | `ValueError: too many values to unpack` antes de escribir | Desempaquetar la clave nueva en todos los bucles |
 | Excepción a mitad de corrida | El escenario activo queda modificado y el siguiente `Activate` puede guardarlo | Envolver: `exec(SRC, globals())`, y en `except`, `DiscardChanges()` si `iModified` |
-| `i_power = 0` desde plano se estanca en un escenario (E06 madrugada) y el original (`i_power = 1`) sí converge | No hay una partida que sirva para todos: E02 necesita `i_power = 0` para no caer en la solución espuria y E06 converge sólo con el original | Partida con respaldos en orden: `i_power = 0` plano + continuación, original plano y original en caliente. Se registra en `R["partida"]`; la validación C sigue exigiendo el original desde plano. Si todas fallan, revisar primero que el ComLdf sea el original (trampa siguiente) |
+| `i_power = 0` desde plano se estanca en un escenario (E06 madrugada) y el original (`i_power = 1`) sí converge | Cambiar el método de flujo por escenario no es una solución: deja escenarios que corren distinto | Partida y validación siempre con el ComLdf por defecto. Si un escenario cae en la solución espuria con el defecto, `i_power = 0` sirve para **diagnosticar** dónde está el problema (en Sidon: corredor 66 kV de Montenegro) y se corrige con soporte local. Tras el soporte local, los seis escenarios de Sidon convergen con el defecto desde plano |
 | Excepción antes de restaurar el ComLdf (E06, 12-11-2026) | El ComLdf es del caso de estudio y no se descarta con el escenario: quedó `i_power = 0` y `iopt_noinit = 1`. El reintento tomó eso como «original», nunca probó el original real y la siguiente corrida habría validado con otro ComLdf | Restaurar las opciones en `finally` de la envoltura y antes de cada `raise`. Antes de cada corrida, comparar el ComLdf con el último registrado (`R["ldf"]`) |
 | Costo | Un flujo por paso probado: E01 completo agotó 3000 s | Presupuesto `PRESUP` y pasos con `__PASOS__` para repetir sólo B2 |
 | Lote largo desde el agente | La tarea en segundo plano de la shell muere a las 2 h y deja el envío a medias | Lotes de ≤ 2 escenarios por tarea. Para diferir, mover los runners a una subcarpeta en vez de matar la tarea |

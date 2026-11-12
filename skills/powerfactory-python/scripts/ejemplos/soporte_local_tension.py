@@ -116,8 +116,9 @@ if RESET:
         if kind == "tap": RS.append([n, at, ga(x, at), v]); x.SetAttribute(at, v)
         else: RS.append([n, "sh", [x.outserv, ga(x, "ncapa")], v]); x.outserv = v[0]; x.SetAttribute("ncapa", v[1])
 R["reset"] = RS
-# --- solucion de partida (buena): i_power = 0 plano, luego continuacion con el original
-PART = [("ip0_plano+cont", lambda: lf(plano=True, ip=0) and lf()), ("orig_plano", lambda: lf(plano=True)), ("orig_caliente", lambda: lf())]
+# --- solucion de partida: siempre con el ComLdf por defecto del caso (12-11, Vicente: todos los escenarios corren igual;
+#     i_power distinto del defecto sirve solo como diagnostico, nunca como solucion)
+PART = [("defecto_plano", lambda: lf(plano=True)), ("defecto_caliente", lambda: lf())]
 ok1 = False
 for _n, _f in PART:
     if _f(): ok1 = True; R["partida"] = _n; break

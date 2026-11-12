@@ -64,7 +64,7 @@ entregar. Complementa `estudio-restricciones.md`, que cubre el cálculo. PF 2025
 | Trampa | Qué pasa | Qué hacer |
 |---|---|---|
 | Dos generadores en el mismo terminal en control de tensión con consignas distintas, sin controlador de estación | PF no ejecuta el flujo: «More than one element controls V…». Igualar consignas no basta | Dejar un solo regulador (el otro en Q constante) o un controlador de estación. Barrer estos casos antes de validar. **Típico de un parque con BESS** |
-| Segunda solución espuria | Tensión baja y sobrecargas absurdas. Arranque en caliente y cambio de consignas no ayudan | `ComLdf.i_power = 0` en ese escenario. **Restituir a 1** al cambiar de escenario: un ComLdf compartido deja el caso entero en 0 |
+| Segunda solución espuria | Tensión baja y sobrecargas absurdas. Arranque en caliente y cambio de consignas no ayudan | Diagnóstico: `ComLdf.i_power = 0` muestra la solución buena. **Solución: no** dejarlo así; corregir la tensión (soporte local) hasta que converja con el ComLdf por defecto. Todos los escenarios deben correr con el mismo ComLdf. Restituir siempre el defecto: el ComLdf es del caso, no del escenario |
 | Transformadores en paralelo con taps distintos tras un ajuste automático | Cada unidad llega a su propio terminal: agrupar por terminal no los encuentra | Agrupar por devanado, rango de tap y S/E@kV de cada lado (`soporte-local-tension.md`) |
 | Barrido con la formulación equivocada | «Hallazgos» físicos falsos | Conservar los archivos del diagnóstico descartado marcados como tales |
 | Primera extracción tras arrancar el puente | Resultados vacíos (`u = None`) | Ejecutar el ComLdf del caso sin cambiar opciones y extraer después |
