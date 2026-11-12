@@ -79,8 +79,8 @@ python scripts\pf_attribute_metadata.py --export --output todo.csv   # tabla com
 
 **GUI, verificado por usuario (no es DB, no mezclar fuente):**
 
-- `ComInc.iopt_lt0`: 0 = por elemento; 1 = todos; 2 = por elemento y compuesto
-  (hover del diálogo; nada de esto sale de la DB, que trae 0 filas).
+- `ComInc.iopt_lt`: 0 = por elemento; 1 = todos; 2 = por elemento y compuesto
+  (hover aportado por el usuario el 09-11-2026; sustituye la nota histórica errónea `iopt_lt0`; los códigos no se deducen de la DB).
 - `ElmDsl.iAstabint` con valor 1 «seleccionado» en el diálogo ⇒ método A-stable
   activado; el hecho lo registró el usuario en PF, no la DB.
 
@@ -116,3 +116,38 @@ sintéticas (no usan la DB real): ruta ausente no se crea, esquema inesperado,
 espacios y `#` en ruta, consultas parametrizadas, límite de pantalla,
 comments crudos, opciones inline sin códigos, `explicit_row` con tabla,
 exports con/protección del data.db.
+
+## Flujo reutilizable de descubrimiento (09-11-2026)
+
+1. Buscar etiquetas offline con `pf_attribute_metadata.py --search TEXTO` o
+   `--class CLASE`; no requiere PF abierto. DB de localización ≠ DB del proyecto.
+2. En una sesión PF autorizada, enumerar por clase con
+   `app.GetAvailableAttributesAsJson(clase, '', 1, 'e', 'name')`.
+   Conservar la respuesta cruda antes de interpretarla (el esquema depende de versión).
+3. Leer los nombres encontrados con `obj.GetAttribute(nombre)`; adjuntar descripción,
+   unidad y tipo si las APIs correspondientes funcionan. Registrar errores por atributo,
+   no convertirlos a cero/None ni afirmar que una lectura fallida prueba inexistencia.
+4. Seguir referencias (`typ_id` cuando exista, `blkdef` en los DSL que lo usen),
+   tablas y macros con identidad completa y conjunto de visitados. Distinguir valores
+   de instancia de defaults del tipo. Trabajar por clase y lotes acotados, sin recorrer
+   recursivamente todo IntUser: un `GetContents('*.IntPrj',1)` causó un crash real.
+5. Unir por (clase, atributo), conservando fuente: runtime / localization_db / gui_hover /
+   manual. Guardar versión PF, idioma, fecha, contexto proyecto/caso/escenario y hash DB.
+   No inferir códigos enum por posición en un texto de opciones.
+6. Pedir hover sólo para campos todavía ambiguos. Persistir confirmaciones con fuente,
+   fecha y versión; la siguiente sesión debe consultar esta referencia antes de pedir fotos.
+
+Confirmaciones GUI del usuario, PF 2025 SP4, 09-11-2026:
+
+| Clase | Atributo | Evidencia GUI |
+|---|---|---|
+| ComInc | iopt_lt | 0 por elemento; 1 todos; 2 por elemento y composite |
+| ComInc | iopt_eulmax | Integration formula restoration steps after reset |
+| ComInc | errseq | Maximum error for dynamic model equations (nombre comunicado por usuario) |
+| ComInc | iopt_solvinc | Solve dynamic model equations at initialisation |
+| TypSym | i_exactConv | Exact conversion of time constants |
+| TypSym | i_speedVar | 0 Considered; 1 Partially neglected; 2 Neglected |
+| BlkDef | sAddEquat | Additional equations |
+
+`btnshow` es un botón GUI (Diagram), no una ecuación ni un parámetro físico.
+La evidencia GUI identifica el campo; leer el valor vivo para confirmar el caso actual.

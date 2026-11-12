@@ -57,6 +57,8 @@ Trabajo con agentes:
 
 - `council/` — revisión con varios modelos.
 - `usage-conscious-agents/` — delegación con bajo consumo de tokens.
+- `delegar-subagentes/` — protocolo vivo para delegar en subagentes (scorecard de ruteo, encargos, verificación, lecciones);
+  nacido del trabajo RMS de ViQSilent.
 
 Otros:
 
