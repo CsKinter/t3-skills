@@ -84,6 +84,7 @@ Use: the index is generic; our scorecard outranks it for this codebase. Escalati
 
 | Date | Model | Task | Result | Time | Protocol |
 |---|---|---|---|---|---|
+| 11-13 | DeepSeek V4.1 Flash max | ComLdf C12: estación/cubículo en NR aumentado | PARTIAL RETENIDO sinmerge:404passed/1skippedrc0 y12/12pendientesreproducidos,peroQ(U)enbarrasdistintaspublicaconvergioTrueconQ=-2.372497vsQminfinal=-2.345221Mvar(violación.027276). Mismabarraocultabafallo. Otrospositivos:2modeloshuérfanoscon0estaciones,recalcularfinalNRusabaresiduobase29.417vs4.7165MVA,APIaceptamodonoimplementado. C13reparación | 39 min 25 s | Limpio,sinSEN/PF/remoto,6commits;integraciónsiguec54e60a. Conteopendientesytodoslostestsverdesnopruebanlímitesdinámicos |
 | 11-13 | Gemini 4 Hydrogen high (antigravity) | ComLdf C11: estación/cubículo y repartoQ vsPF | PARTIAL útil,0commits:rawmedidoreslocales12/5St;orquestadorrepite5droop25F<=1.162e-10pu,mediciónYdS<=2.311e-6MVA,FD1.15165e-10,Finissgn*ngnum7.19e-14Mvar. RefutadaaislaciónNuevaPanDeAzúcar:conectada porElmSindReactor_SVC_EQ,mismaisla3918. C12imode0multiP0siguependiente;noinferirleyde50/50PF | 25 min 16 s thread (25 min 12 s ejecución) | Limpio,sinPF/remoto/SEN. PropuestaPFnoaprobada:faltaguardacontexto,recursión1,modifiedFalseinventado;avancebasenorequierePF |
 | 11-13 | DeepSeek V4.1 Flash max | ComLdf C10: Qlim/IntQlim explícitas y lazoexternoNR | DONE local/PARTIALSEN,mergedc54e60a:51/20pendientes y145/162Qlimmodeladas;234modelos. Revisión hallóPslackdedespachousadaencurva/salida(100vs50.06055MW),residualhistórico,ánguloperdidoylímitesNaN;corregidoscon6casos+regresiónfortalecida.387passed/1skippedrc0,OLF0diferencias binarias45061/46166floats,pasivosintactos. SlackligandoQrechazado | 1 h 7 min 9 s | Limpio,sinPF/remoto/SEN,9commits. erreqsindemostración;145modeladasnoequivaleaSENconvergido |
 | 11-13 | DeepSeek V4.1 Flash max | ComLdf C09: consignasraw y rechazosconservadores | DONE merged local73ea11a:10commits,196/20pendientes reproducidos;88constqrectangulareslibres,meta202eraerrorC08(6curvasbajoestación). Revisióncorrigió3flagsnuevosquefiltrabandiagnósticoOLF ysumótest:338passed/1skippedrc0. OLFcompleto0diferencias binarias45061/46166floats. PasivosPF25F3650ramasmax.168772MVAintactos | 38 min 40 s thread | Limpio;NRopt-in,sinPF/remoto. Qtposttests134/138/139enhelpersprevios;deleteLaterdeventanasabiertasantesdeflushdiofullrc0,sinos._exit/exclusiones |
@@ -272,6 +273,8 @@ Exit schema: STATUS / FILES_MODIFIED / COMMITS / VERIFICATION / KEY_FINDINGS (<3
 5. Merge `--no-ff` into the integration branch with the numbers in the message; rerun the full suite; log in the scorecard.
 
 ## 6. Lessons (dated; add new ones on top)
+
+- 11-13 (ComLdf C12): probarcurvasQ(U)conparticipantesenbarrasDISTINTAS;enunmismonudolareparticiónmantieneUyocultalímitecongelado. LadoMIN/MAXdebeserestado,nopróximidadnuméricaalvaloractual;anti3noautoriza congelarQ(U). Compilacióndispositivodebeconfirmarseatómicamentedespuésdevalidar,ylosdiagnósticosfallidosdebenusarlas mismasecuacionesaumentadasqueNR.
 
 - 11-13 (ComLdf C11): antesdeafirmarbarraaislada,revisartodaslasclasespasivas,inclElmSind/ElmZpu,no sóloLne/Tr2. CierredeleycontrolaVPFno pruebaactuabilidadnideterminaleyderepartoimode0Ptotal0;50/50observadonoautorizafallbackigualitario. Buscarconfigrawenmedidoresexistentes;noejecutarpropuestasPFsinguardacontexto/metadatoleído.
 
